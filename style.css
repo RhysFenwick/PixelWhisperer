@@ -28,6 +28,14 @@ p, h1, h2, h3, h4, button {
     height: 100%;
 }
 
+footer {
+    font-size: small;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
 /**/
 /* Layout */
 /**/
