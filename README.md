@@ -7,4 +7,5 @@ This software is published under the [MIT License](https://opensource.org/licens
 
 ## Credit/inspiration:
 [Name the Color by Chirag Mehta](https://chir.ag/projects/name-that-color/)
+
 [Color Name & Hue by Daniel Flueck](https://www.color-blindness.com/color-name-hue/)
