@@ -110,7 +110,7 @@ const magGlass = document.getElementById("mag-glass");
 const magSlider = document.getElementById("mag-res");
 
 // Add squares
-var magSize = 5; // Current square length of magnifying glass - should be an odd number!
+var magSize = 5; // Initial square length of magnifying glass - should be an odd number!
 const magPixels = document.getElementById("mag-glass").children; // HTMLCollection is live - will update as mag-glass changes
 
 // Changes the magnifying glass to the chosen resolution
@@ -128,6 +128,10 @@ function magZoom() {
     d.className = "mag-pixel";
     magGlass.appendChild(d)
   }
+
+  // Make central square black-bordered
+  magPixels.item((magPixels.length - 1) / 2).style.border = "2px black solid";
+  magPixels.item((magPixels.length - 1) / 2).style.borderRadius = "2px";
 }
 
 magZoom(); // Call magSize as initial setup
