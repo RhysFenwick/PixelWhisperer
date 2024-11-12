@@ -9,3 +9,8 @@ This software is published under the [MIT License](https://opensource.org/licens
 [Name the Color by Chirag Mehta](https://chir.ag/projects/name-that-color/)
 
 [Color Name & Hue by Daniel Flueck](https://www.color-blindness.com/color-name-hue/)
+
+## TODO
+- Make list of colours more consistent and fine-grained
+- Add picture zoom functionality
+- Add magnifying glass showing e.g. 5x5 pixel grid surrounding mouse pointer

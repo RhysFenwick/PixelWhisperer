@@ -1,6 +1,10 @@
 /**/
 /* Page-wide properties */
 /**/
+:root {
+    --main-accent: #BE830E;
+}
+
 
 p, h1, h2, h3, h4, button {
     text-align: center;
@@ -11,7 +15,7 @@ p, h1, h2, h3, h4, button {
     padding: 1%;
     margin: 1%;
     border: 2px solid;
-    border-color: #BE830E;
+    border-color: var(--main-accent);
     border-radius: 5px;
     height: fit-content;
     width: fit-content;
@@ -71,6 +75,24 @@ footer {
 #color-info {
     height: 50%;
     overflow: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#mag-glass {
+    width: 100%;
+    aspect-ratio: 1/1;
+    display: grid;
+}
+
+.mag-pixel {
+    border: 1px lightgray solid;
+}
+
+#mag-res {
+    color: var(--main-accent);
+    outline: none;
 }
 
 /* Right column */

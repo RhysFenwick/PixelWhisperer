@@ -7,8 +7,8 @@ const colorList = {
     "FF0000": "Red",
     "00FFFF": "Cyan",
     "0000FF": "Blue",
-    "00008B": "DarkBlue",
-    "ADD8E6": "LightBlue",
+    "00008B": "Dark Blue",
+    "ADD8E6": "Light Blue",
     "800080": "Purple",
     "FFFF00": "Yellow",
     "00FF00": "Lime",
@@ -24,37 +24,37 @@ const colorList = {
     "008000": "Green",
     "808000": "Olive",
     "7FFFD4": "Aquamarine",
-    "FF4500": "OrangeRed",
-    "FF8C00": "DarkOrange",
-    "FFB6C1": "LightPink",
-    "FF69B4": "HotPink",
-    "FF1493": "DeepPink",
-    "8B0000": "DarkRed",
+    "FF4500": "Orange-Red",
+    "FF8C00": "Dark Orange",
+    "FFB6C1": "Light Pink",
+    "FF69B4": "Hot Pink",
+    "FF1493": "Deep Pink",
+    "8B0000": "Dark Red",
     "DC143C": "Crimson",
     "FFD700": "Gold",
-    "FFFFE0": "LightYellow",
+    "FFFFE0": "Light Yellow",
     "F0E68C": "Khaki",
-    "BDB76B": "DarkKhaki",
+    "BDB76B": "Dark Khaki",
     "EE82EE": "Violet",
-    "8A2BE2": "BlueViolet",
-    "9400D3": "DarkViolet",
+    "8A2BE2": "Blue Violet",
+    "9400D3": "Dark Violet",
     "4B0082": "Indigo",
-    "ADFF2F": "GreenYellow",
-    "32CD32": "LimeGreen",
-    "98FB98": "PaleGreen",
-    "006400": "DarkGreen",
-    "556B2F": "DarkOliveGreen",
+    "ADFF2F": "Green-Yellow",
+    "32CD32": "Lime Green",
+    "98FB98": "Pale Green",
+    "006400": "Dark Green",
+    "556B2F": "Dark Olive Green",
     "008080": "Teal",
-    "E0FFFF": "LightCyan",
-    "4682B4": "SteelBlue",
-    "B0C4DE": "LightSteelBlue",
-    "191970": "MidnightBlue",
+    "E0FFFF": "Light Cyan",
+    "4682B4": "Steel Blue",
+    "B0C4DE": "Light Steel Blue",
+    "191970": "Midnight Blue",
     "D2B48C": "Tan",
     "D2691E": "Chocolate",
     "DAA520": "Golden-Brown",
     "B8860B": "Dark Golden-Brown",
-    "D3D3D3": "LightGray",
-    "696969": "DimGray"
+    "D3D3D3": "Light Grey",
+    "696969": "Dim Grey"
 };
 
 
@@ -105,6 +105,33 @@ function closestColor(colorList, sample) {
 // Webpage interactivity
 ////////////////////////////////////////
 
+// Set up magnifying glass & slider
+const magGlass = document.getElementById("mag-glass");
+const magSlider = document.getElementById("mag-res");
+
+// Add squares
+var magSize = 5; // Current square length of magnifying glass - should be an odd number!
+const magPixels = document.getElementById("mag-glass").children; // HTMLCollection is live - will update as mag-glass changes
+
+// Changes the magnifying glass to the chosen resolution
+function magZoom() {
+  console.log(magSize);
+  // Set grid styling as a square
+  magGlass.style.gridTemplate = "auto ".repeat(magSize).concat("/ ","auto ".repeat(magSize));
+
+  // Wipe the slate...
+  magGlass.innerHTML = '';
+
+  // ...Amd add all the squares again
+  for (var i=0; i<magSize**2;i++) {
+    var d = document.createElement("div");
+    d.className = "mag-pixel";
+    magGlass.appendChild(d)
+  }
+}
+
+magZoom(); // Call magSize as initial setup
+
 // On click, captures the page as a canvas then uses getImageData to get RGB of the clicked pixel, calls closestColor, and prints the output to the color_name element.
 // Add click event listener to the image
 document.getElementById("picker-image").addEventListener("mousemove", function(event) {
@@ -136,6 +163,13 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
     document.getElementById("red-amount").style.width = `${pixelData[0]*100/255}%`;
     document.getElementById("green-amount").style.width = `${pixelData[1]*100/255}%`;
     document.getElementById("blue-amount").style.width = `${pixelData[2]*100/255}%`;
+
+    // Get magnifying glass pixel colours
+    for (var i=0;i<magPixels.length;i++) {
+      var magColorComponents = ctx.getImageData((x - (magSize - 1)/2 + i%magSize), (y - (magSize - 1)/2 + i/magSize), 1, 1).data; // Gets x/y coords based on i
+      var magColor = rgbToHex(magColorComponents[0],magColorComponents[1],magColorComponents[2]);
+      magPixels.item(i).style.backgroundColor = "#" + magColor;
+    }
 });
 
 // Allows for image upload
@@ -207,3 +241,11 @@ video.style.display = 'none'; // Show video preview
 closeButton.style.display = 'none'; // Show close button
 cameraButton.textContent = 'Take Photo';
 });
+
+// Add magnifying glass slider functionality
+magSlider.oninput = function() {
+  if (this.value%2) { // If it's odd
+    magSize = this.value;
+  }
+  magZoom();
+}

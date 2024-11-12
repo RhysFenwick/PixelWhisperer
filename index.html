@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Pixel Whisperer</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
   </head>
   <body>
 
@@ -19,7 +19,7 @@
         <div id="focus-image" class="box">
 
             <p id="explainer">
-                Click on the image below to see hex code and closest colour name of the pixel you've clicked on.
+                Mouse over the image below to see hex code and closest colour name of the pixel you've landed on.
             </p>
 
             <div id="img-box">
@@ -40,7 +40,7 @@
                         &nbsp;
                     </p>
         
-                    <h4>RGB hex code</h4>
+                    <h4>Hex code (RRGGBB)</h4>
                     <p id="color-hex">
                         &nbsp;    
                     </p>
@@ -60,6 +60,13 @@
                     <div id="blue-bar" class="rgb-bar">
                         <div id="blue-amount" class="rgb-amount" style="background-color: blue;"></div>
                     </div>
+
+                    <h4>Magnifying glass</h4>
+
+                    <div id="mag-glass">
+                    </div>
+
+                    <input type="range" min="1" max="15" value="5" class="slider" id="mag-res">
                     
                 </div>
 
