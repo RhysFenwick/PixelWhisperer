@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Pixel Whisperer</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+
+    <h1 id="page-heading">
+        Pixel Whisperer - Turn picture colours into words.
+    </h1>
+
+    <div id="page-contents">
+
+        <div id="focus-image" class="box">
+
+            <p id="explainer">
+                Click on the image below to see hex code and closest colour name of the pixel you've clicked on.
+            </p>
+
+            <div id="img-box">
+                <!-- Image being sampled - default is ducklings -->
+                <img id="picker-image" src="img/Ducklings right.jpg">
+            </div>
+
+        </div>
+
+            <div id="info" class="box">
+                
+                <h3>Colour Info</h3>
+
+                <div id="text-info">
+
+                    <h4>Closest colour name</h4>
+                    <p id="color-name">
+                        &nbsp;
+                    </p>
+        
+                    <h4>RGB hex code</h4>
+                    <p id="color-hex">
+                        &nbsp;    
+                    </p>
+
+                </div>
+
+                <div id="color-info">
+
+                    <h4>RGB values</h4>
+
+                    <div id="red-bar" class="rgb-bar">
+                        <div id="red-amount" class="rgb-amount" style="background-color: red;"></div>
+                    </div>
+                    <div id="green-bar" class="rgb-bar">
+                        <div id="green-amount" class="rgb-amount" style="background-color: green;"></div>
+                    </div>
+                    <div id="blue-bar" class="rgb-bar">
+                        <div id="blue-amount" class="rgb-amount" style="background-color: blue;"></div>
+                    </div>
+                    
+                </div>
+
+            </div>
+    
+            <div id="image-upload" class="box">
+
+                <h3>Add your own image</h3>
+    
+                <!-- Button to activate the camera and take a photo -->
+                <button id="camera-button">Take Photo</button>
+    
+                <!-- Button to close the camera -->
+                <button id="camera-close-button">Close Camera</button>
+    
+                <!-- Hidden video element for previewing the camera feed -->
+                <video id="camera-preview" autoplay></video>
+    
+                <!-- File input for uploading a new image -->
+                <input type="file" id="image-upload" accept="image/*">
+    
+            </div>
+
+  </div>
+
+  </body>
+  <script type="text/javascript" src="script.js"></script>
+</html>
