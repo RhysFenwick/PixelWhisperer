@@ -57,7 +57,8 @@ footer {
 }
 
 #img-box {
-    width: 100%
+    width: 100%;
+    position: relative;
 }
 
 #picker-image {
@@ -100,6 +101,28 @@ footer {
 
 #image-upload {
     width: fit-content;
+}
+
+/* Crosshair */
+
+/* Crosshair */
+
+.crosshair-line {
+    position: absolute;
+    background-color: black;
+    pointer-events: none; /* Prevents the lines from interfering with mouse events */
+    z-index: 10; /* Ensure the lines are on top of the image */
+}
+
+#horizontal-line {
+    height: 1px;
+    width: 100%;
+}
+
+#vertical-line {
+    width: 1px;
+    height: 100%;
+    top: 0; /* Ensure the vertical line starts from the top */
 }
 
 /**/

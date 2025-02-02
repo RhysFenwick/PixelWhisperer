@@ -14,3 +14,5 @@ This software is published under the [MIT License](https://opensource.org/licens
 - Make list of colours more consistent and fine-grained
 - Add picture zoom functionality
 - Add magnifying glass showing e.g. 5x5 pixel grid surrounding mouse pointer
+
+

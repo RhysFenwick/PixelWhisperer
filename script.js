@@ -140,7 +140,7 @@ const magGlass = document.getElementById("mag-glass");
 const magSlider = document.getElementById("mag-res");
 
 // Add squares
-var magSize = 5; // Initial square length of magnifying glass - should be an odd number!
+var magSize = 11; // Initial square length of magnifying glass - should be an odd number!
 const magPixels = document.getElementById("mag-glass").children; // HTMLCollection is live - will update as mag-glass changes
 
 // Changes the magnifying glass to the chosen resolution
@@ -204,6 +204,24 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
       var magColor = rgbToHex(magColorComponents[0],magColorComponents[1],magColorComponents[2]);
       magPixels.item(i).style.backgroundColor = "#" + magColor;
     }
+});
+
+// Handles crosshairs moving over image
+
+document.getElementById('picker-image').addEventListener('mousemove', function(event) {
+  const imgBox = event.currentTarget.parentElement;
+  const rect = imgBox.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  const horizontalLine = document.getElementById('horizontal-line');
+  const verticalLine = document.getElementById('vertical-line');
+  const pixelXY = document.getElementById('pixel-xy');
+
+  horizontalLine.style.top = `${y}px`;
+  verticalLine.style.left = `${x}px`;
+
+  pixelXY.textContent = `${Math.round(x)} left, ${Math.round(y)} down`;
 });
 
 // Allows for image upload
