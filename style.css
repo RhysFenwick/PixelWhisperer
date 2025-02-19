@@ -12,6 +12,19 @@ p, h1, h2, h3, h4, button {
     margin: 0.5em;
 }
 
+button:active {
+    background-color: var(--main-accent);
+    border-radius: 5px;
+}
+
+ol {
+    font-family: sans-serif;
+}
+
+li {
+    margin-top: 0.5em;
+}
+
 .box {
     padding: 1%;
     margin: 1%;
@@ -97,13 +110,19 @@ footer {
     outline: none;
 }
 
-/* Right column */
+/* Second From Right column */
 
 #image-upload {
     width: fit-content;
 }
 
-/* Crosshair */
+/* Furthest Right Column */
+
+#pixel-stats {
+    width: 15%;
+    max-height: 75vh;
+    overflow-y: scroll;
+}
 
 /* Crosshair */
 

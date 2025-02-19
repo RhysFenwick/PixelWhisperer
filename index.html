@@ -29,70 +29,85 @@
                 <div id="vertical-line" class="crosshair-line"></div>
             </div>
 
+    </div>
+
+        <div id="info" class="box">
+            
+            <h3>Colour Info</h3>
+
+            <div id="text-info">
+
+                <h4>Closest colour name</h4>
+                <p id="color-name">
+                    &nbsp;
+                </p>
+    
+                <h4>Hex code (RRGGBB)</h4>
+                <p id="color-hex">
+                    &nbsp;    
+                </p>
+
+            </div>
+
+            <div id="color-info">
+
+                <h4>RGB values</h4>
+
+                <div id="red-bar" class="rgb-bar">
+                    <div id="red-amount" class="rgb-amount" style="background-color: red;"></div>
+                </div>
+                <div id="green-bar" class="rgb-bar">
+                    <div id="green-amount" class="rgb-amount" style="background-color: green;"></div>
+                </div>
+                <div id="blue-bar" class="rgb-bar">
+                    <div id="blue-amount" class="rgb-amount" style="background-color: blue;"></div>
+                </div>
+
+                <h4>Magnifying glass</h4>
+
+                <div id="mag-glass">
+                </div>
+
+                <input type="range" min="1" max="15" value="11" class="slider" id="mag-res">
+                <p id="pixel-xy">0 left, 0 down</p>
+            </div>
+
         </div>
 
-            <div id="info" class="box">
-                
-                <h3>Colour Info</h3>
+        <div id="pixel-stats" class="box">
 
-                <div id="text-info">
+            <h3>Selected pixels</h3>
 
-                    <h4>Closest colour name</h4>
-                    <p id="color-name">
-                        &nbsp;
-                    </p>
-        
-                    <h4>Hex code (RRGGBB)</h4>
-                    <p id="color-hex">
-                        &nbsp;    
-                    </p>
+            <!-- List of pixels clicked on-->
+            <ol id="pixel-list">
+            </ol>
 
-                </div>
-
-                <div id="color-info">
-
-                    <h4>RGB values</h4>
-
-                    <div id="red-bar" class="rgb-bar">
-                        <div id="red-amount" class="rgb-amount" style="background-color: red;"></div>
-                    </div>
-                    <div id="green-bar" class="rgb-bar">
-                        <div id="green-amount" class="rgb-amount" style="background-color: green;"></div>
-                    </div>
-                    <div id="blue-bar" class="rgb-bar">
-                        <div id="blue-amount" class="rgb-amount" style="background-color: blue;"></div>
-                    </div>
-
-                    <h4>Magnifying glass</h4>
-
-                    <div id="mag-glass">
-                    </div>
-
-                    <input type="range" min="1" max="15" value="11" class="slider" id="mag-res">
-                    <p id="pixel-xy">0 left, 0 down</p>
-                </div>
-
-            </div>
-    
-            <div id="image-upload" class="box">
-
-                <h3>Add your own image</h3>
-
-                <!-- File input for uploading a new image -->
-                <input type="file" id="image-upload" accept="image/*">
-    
-                <!-- Button to activate the camera and take a photo -->
-                <button id="camera-button">Take Photo</button>
-    
-                <!-- Button to close the camera -->
-                <button id="camera-close-button">Close Camera</button>
-    
-                <!-- Hidden video element for previewing the camera feed -->
-                <video id="camera-preview" autoplay></video>
-
+            <div id="data-buttons">
+                <button id="copy-button">Copy</button>
+                <button id="clear-button">Clear</button>
+                <button id="export-button">Export</button>
             </div>
 
-  </div>
+        </div>
+
+        <div id="image-upload" class="box">
+
+            <h3>Add your own image</h3>
+
+            <!-- File input for uploading a new image -->
+            <input type="file" id="image-upload" accept="image/*">
+
+            <!-- Button to activate the camera and take a photo -->
+            <button id="camera-button">Take Photo</button>
+
+            <!-- Button to close the camera -->
+            <button id="camera-close-button">Close Camera</button>
+
+            <!-- Hidden video element for previewing the camera feed -->
+            <video id="camera-preview" autoplay></video>
+
+        </div>
+    </div>
 
   <footer>
     <p>Copyright <script>document.write( new Date().getFullYear() );</script> Rhys Fenwick. Created at <a href="https://anu.edu.au">ANU</a>; code available at <a href="https://github.com/RhysFenwick/PixelWhisperer">GitHub</a> under <a href="https://opensource.org/license/mit">MIT Licence</a>.</p>

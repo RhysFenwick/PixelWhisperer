@@ -166,8 +166,8 @@ function magZoom() {
 
 magZoom(); // Call magSize as initial setup
 
-// On click, captures the page as a canvas then uses getImageData to get RGB of the clicked pixel, calls closestColor, and prints the output to the color_name element.
-// Add click event listener to the image
+// On mouseover, captures the page as a canvas then uses getImageData to get RGB of the clicked pixel, calls closestColor, and prints the output to the color_name element.
+// Add mousemove event listener to the image
 document.getElementById("picker-image").addEventListener("mousemove", function(event) {
     const img = event.target;
     const canvas = document.createElement("canvas");
@@ -223,6 +223,67 @@ document.getElementById('picker-image').addEventListener('mousemove', function(e
 
   pixelXY.textContent = `${Math.round(x)} left, ${Math.round(y)} down`;
 });
+
+// Handles selecting pixels in the image
+
+document.getElementById('picker-image').addEventListener('click', function(event) {
+  const img = event.target;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Set canvas dimensions to the image dimensions
+  canvas.width = img.width;
+  canvas.height = img.height;
+
+  // Draw the image onto the canvas
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+
+  // Get the clicked pixel's color
+  const rect = img.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const pixelData = ctx.getImageData(x, y, 1, 1).data;
+
+  // Update the pixel-list with the pixel details
+  const pixelList = document.getElementById('pixel-list');
+  var pixel = document.createElement('li');
+  pixel.appendChild(document.createTextNode(`${Math.round(x)}, ${Math.round(y)} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} \n ${closestColor(colorList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]}`));
+  pixelList.appendChild(pixel);
+});
+
+// Handles clearing the pixel list - TODO: Add confirmation dialog
+document.getElementById('clear-button').addEventListener('click', function() {
+  document.getElementById('pixel-list').innerHTML = '';
+});
+
+// Handles copying the pixel list to the clipboard
+document.getElementById('copy-button').addEventListener('click', function() {
+  navigator.clipboard.writeText(pixelListToString());
+  // Make the list go grey briefly to indicate it's been copied
+  document.getElementById('pixel-list').style.backgroundColor = '#f0f0f0';
+  setTimeout(() => {{document.getElementById('pixel-list').style.backgroundColor = 'white';}}, 250);
+});
+
+// Handles saving the pixel list to a file
+document.getElementById('export-button').addEventListener('click', function() {
+  const blob = new Blob([pixelListToString()], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pixel-list.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Turns the pixel-list into a well-formatted string
+function pixelListToString() {
+  const pixelList = document.getElementById('pixel-list');
+  var pixelText = Array.from(pixelList.children).map(pixel => pixel.textContent).join('?');
+  pixelText = pixelText.replaceAll("\n", "-");
+  pixelText = pixelText.replaceAll('?', '\n');
+  return pixelText;
+};
+
 
 // Allows for image upload
 document.getElementById('image-upload').addEventListener('change', function(event) {
