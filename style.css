@@ -120,7 +120,10 @@ footer {
 
 #pixel-stats {
     width: 15%;
-    max-height: 75vh;
+}
+
+#pixel-list {
+    max-height: 60vh;
     overflow-y: scroll;
 }
 
