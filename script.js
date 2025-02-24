@@ -388,7 +388,7 @@ const elabCheck = document.getElementById('elab-mode');
 elabCheck.addEventListener('change', function() {
   if (elabCheck.checked) {
     // Make ELAB mode
-    document.getElementById('page-heading').textContent = "Pixel Whisperer - ELAB Mode";
+    document.getElementById('page-heading').textContent = "Pixel Whisperer - ELab Mode";
     totalList = {...colorList, ...elabList};
   }
   else {
