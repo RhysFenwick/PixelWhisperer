@@ -87,6 +87,26 @@ const colorList = {
   "F5F5DC": "Very Pale Yellow-Brown"
 };
 
+const elabList = {
+  "51A2F3": "Grey",
+  "BCFFFE": "White",
+  "C2E5AE": "Pale Yellow",
+  "B09835": "Orange",
+  "9C6C4D": "Dull Red",
+  "6942AF": "Purple",
+  "0199FF": "Deep Blue",
+  "56F0D5": "Blue Green",
+  "BDE142": "Green Yellow",
+  "D0C686": "Orange",
+  "D7ADC4": "Rose Red",
+  "D27DFF": "Purple",
+  "00D089": "Green",
+  "FAC8FF": "Pink",
+  "CDECFF": "Pink/Green"
+};
+
+var totalList = {...colorList};
+
 
 // Takes a hex code string, returns three numbers
 function hexToRgb(hex) {
@@ -112,13 +132,13 @@ function colorDistance(color1, color2) {
     );
 }
 
-// Takes colorList and a sample hex code, returns entry on colorList as array [hex_as_string, name_as_string]
-function closestColor(colorList, sample) {
+// Takes totalList and a sample hex code, returns entry on totalList as array [hex_as_string, name_as_string]
+function closestColor(totalList, sample) {
     const sampleRgb = hexToRgb(sample);
     let closestHex = null;
     let closestDistance = Infinity;
 
-    for (const [hex, name] of Object.entries(colorList)) {
+    for (const [hex, name] of Object.entries(totalList)) {
         const colorRgb = hexToRgb(hex);
         const distance = colorDistance(sampleRgb, colorRgb);
 
@@ -128,7 +148,7 @@ function closestColor(colorList, sample) {
         }
     }
 
-    return [closestHex, colorList[closestHex]];
+    return [closestHex, totalList[closestHex]];
 }
 
 ////////////////////////////////////////
@@ -187,10 +207,10 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
     const pixelData = ctx.getImageData(x, y, 1, 1).data;
 
     const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-    const [closestHex, colorName] = closestColor(colorList, hex);
+    const [colorHex, colorName] = closestColor(totalList, hex);
 
     // Update the paragraphs with the closest color name and hex code
-    document.getElementById("color-name").textContent = `${colorName}`;
+    document.getElementById("color-name").textContent = `${colorHex} - ${colorName}`;
     document.getElementById("color-hex").textContent = `${hex}`;
 
     // Update the progress bars with the RGB values
@@ -247,7 +267,7 @@ document.getElementById('picker-image').addEventListener('click', function(event
   // Update the pixel-list with the pixel details
   const pixelList = document.getElementById('pixel-list');
   var pixel = document.createElement('li');
-  pixel.appendChild(document.createTextNode(`${Math.round(x)}, ${Math.round(y)} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} \n ${closestColor(colorList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]}`));
+  pixel.appendChild(document.createTextNode(`${Math.round(x)}, ${Math.round(y)} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} \n ${closestColor(totalList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]}`));
   pixelList.appendChild(pixel);
 });
 
@@ -362,3 +382,24 @@ magSlider.oninput = function() {
   }
   magZoom();
 }
+
+// Listener for ELAB checkbox toggle
+const elabCheck = document.getElementById('elab-mode');
+elabCheck.addEventListener('change', function() {
+  if (elabCheck.checked) {
+    // Make ELAB mode
+    document.getElementById('page-heading').textContent = "Pixel Whisperer - ELAB Mode";
+    totalList = {...colorList, ...elabList};
+  }
+  else {
+    // Make normal
+    document.getElementById('page-heading').textContent = "Pixel Whisperer - Turn picture colours into words.";
+    totalList = {...colorList};
+  }
+});
+
+// Function to call on page load
+function init() {
+  // Uncheck ELAB mode
+  elabCheck.checked = false;
+};

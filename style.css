@@ -6,10 +6,33 @@
 }
 
 
-p, h1, h2, h3, h4, button {
+p, h1, h2, h3, h4, button, label {
     text-align: center;
     font-family: sans-serif;
     margin: 0.5em;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+   
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+  }
+
+label:hover .tooltiptext {
+    visibility: visible;
 }
 
 button:active {
