@@ -200,11 +200,11 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
     // Draw the image onto the canvas
     ctx.drawImage(img, 0, 0, img.width, img.height);
 
-    // Get the clicked pixel's color
+    // Get the mouseover'ed pixel's color
     const rect = img.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const pixelData = ctx.getImageData(x, y, 1, 1).data;
+    const pixelData = ctx.getImageData(x+1, y+1, 1, 1).data;
 
     const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
     const [colorHex, colorName] = closestColor(totalList, hex);
@@ -220,7 +220,7 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
 
     // Get magnifying glass pixel colours
     for (var i=0;i<magPixels.length;i++) {
-      var magColorComponents = ctx.getImageData((x - (magSize - 1)/2 + i%magSize), (y - (magSize - 1)/2 + i/magSize), 1, 1).data; // Gets x/y coords based on i
+      var magColorComponents = ctx.getImageData((x+1 - (magSize - 1)/2 + i%magSize), (y - (magSize - 1)/2 + i/magSize), 1, 1).data; // Gets x/y coords based on i
       var magColor = rgbToHex(magColorComponents[0],magColorComponents[1],magColorComponents[2]);
       magPixels.item(i).style.backgroundColor = "#" + magColor;
     }
@@ -262,7 +262,7 @@ document.getElementById('picker-image').addEventListener('click', function(event
   const rect = img.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  const pixelData = ctx.getImageData(x, y, 1, 1).data;
+  const pixelData = ctx.getImageData(x+1, y+1, 1, 1).data;
 
   // Update the pixel-list with the pixel details
   const pixelList = document.getElementById('pixel-list');

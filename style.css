@@ -137,6 +137,7 @@ footer {
 
 #image-upload {
     width: fit-content;
+    max-width: 20%;
 }
 
 /* Furthest Right Column */
@@ -176,6 +177,7 @@ footer {
 
 #camera-preview {
     display: none; 
+    max-width: 100%;
 }
 
 #camera-close-button {
