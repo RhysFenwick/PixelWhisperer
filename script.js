@@ -11,7 +11,7 @@ fetch('colours.json')
   .then(data => {
     colourList = data.colourList;
     eLabList = data.elabList;
-    totalList = {...colourList};
+    totalList = colourList;
     // Now the global vars are populated and accessible
     console.log("Fetched colours!");
   })
@@ -51,22 +51,27 @@ function colourDistance(colour1, colour2) {
 
 // Takes totalList and a sample hex code, returns entry on totalList as array [hex_as_string, name_as_string]
 function closestcolour(totalList, sample) {
-    const sampleRgb = hexToRgb(sample);
-    let closestHex = null;
-    let closestDistance = Infinity;
+  const sampleRgb = hexToRgb(sample);
+  let closestHex = null;
+  let closestName = null;
+  let closestDistance = Infinity;
 
-    for (const [hex, name] of Object.entries(totalList)) {
-        const colourRgb = hexToRgb(hex);
-        const distance = colourDistance(sampleRgb, colourRgb);
+  for (const [name, hexList] of Object.entries(totalList)) {
+    for (const hex of hexList) {
+      const colourRgb = hexToRgb(hex);
+      const distance = colourDistance(sampleRgb, colourRgb);
 
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            closestHex = hex;
-        }
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestHex = hex;
+        closestName = name;
+      }
     }
+  }
 
-    return [closestHex, totalList[closestHex]];
+  return [closestHex, closestName];
 }
+
 
 ////////////////////////////////////////
 // Webpage interactivity
@@ -320,12 +325,12 @@ elabCheck.addEventListener('change', function() {
   if (elabCheck.checked) {
     // Make ELAB mode
     document.getElementById('page-heading').textContent = "Pixel Whisperer - ELab Mode";
-    totalList = {...colourList, ...elabList};
+    totalList = eLabList
   }
   else {
     // Make normal
     document.getElementById('page-heading').textContent = "Pixel Whisperer - Turn picture colours into words.";
-    totalList = {...colourList};
+    totalList = colourList
   }
 });
 
