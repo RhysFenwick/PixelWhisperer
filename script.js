@@ -103,7 +103,7 @@ function magZoom() {
   // Wipe the slate...
   magGlass.innerHTML = '';
 
-  // ...Amd add all the squares again
+  // ...And add all the squares again
   for (var i=0; i<magSize**2;i++) {
     var d = document.createElement("div");
     d.className = "mag-pixel";
@@ -135,7 +135,7 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
     const rect = img.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const pixelData = ctx.getImageData(x+1, y+1, 1, 1).data;
+    const pixelData = ctx.getImageData((x+1)/zoom, (y+1)/zoom, 1, 1).data;
 
     const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
     const [colourHex, colourName] = closestcolour(totalList, hex);
@@ -151,7 +151,14 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
 
     // Get magnifying glass pixel colours
     for (var i=0;i<magPixels.length;i++) {
-      var magcolourComponents = ctx.getImageData((x+1 - (magSize - 1)/2 + i%magSize), (y - (magSize - 1)/2 + i/magSize), 1, 1).data; // Gets x/y coords based on i
+      var magPixelX = (x+1 - (magSize - 1)/2 + i%magSize)/zoom;
+      var magPixelY = (y - (magSize - 1)/2 + i/magSize)/zoom - 1;
+
+      if (i%magSize < (magSize - 1)/2) {
+        magPixelY += (1/zoom)/2;
+      }
+
+      var magcolourComponents = ctx.getImageData(magPixelX, magPixelY, 1, 1).data; // Gets x/y coords based on i
       var magcolour = rgbToHex(magcolourComponents[0],magcolourComponents[1],magcolourComponents[2]);
       magPixels.item(i).style.backgroundColor = "#" + magcolour;
     }
@@ -162,13 +169,13 @@ document.getElementById('picker-image').addEventListener('mousemove', function(e
   const imgBox = event.currentTarget;
   const rect = imgBox.getBoundingClientRect();
   const x = event.clientX - rect.x - rect.width * (1 - 1/zoom)/2;
-  console.log(x)
   const y = event.clientY - rect.y - rect.height * (1 - 1/zoom)/2;
 
   horizontalLine.style.top = `${y}px`;
   verticalLine.style.left = `${x}px`;
 
-  pixelXY.textContent = `${Math.round(x)} left, ${Math.round(y)} down`;
+  // This formula's messy as I'm compensating for weird glitches around the edges
+  pixelXY.textContent = `${Math.ceil((event.clientX - rect.x+1)/zoom)} right, ${Math.ceil((event.clientY - rect.y + (1 - 1/zoom))/zoom)} down`;
 });
 
 // Handles selecting pixels in the image
