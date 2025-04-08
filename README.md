@@ -13,6 +13,7 @@ This software is published under the [MIT License](https://opensource.org/licens
 ## TODO
 - Make list of colours more consistent and fine-grained
 - Add picture zoom functionality
-- Add picture magnifying function
+- Split out colour list to a separate JSON
+- Make export a csv
 
 

@@ -1,111 +1,28 @@
 ////////////////////////////////////////
-// Colour-selecting tools
+// Set up colour lists
 ////////////////////////////////////////
 
-// Object listing common colours
-const colorList = {
-  "FF0000": "Red",
-  "00FFFF": "Cyan",
-  "0000FF": "Blue",
-  "00008B": "Dark Blue",
-  "ADD8E6": "Light Blue",
-  "800080": "Purple",
-  "FFFF00": "Yellow",
-  "00FF00": "Lime",
-  "FF00FF": "Magenta",
-  "FFC0CB": "Pink",
-  "FFFFFF": "White",
-  "C0C0C0": "Silver",
-  "808080": "Grey",
-  "000000": "Black",
-  "FFA500": "Orange",
-  "A52A2A": "Brown",
-  "800000": "Maroon",
-  "008000": "Green",
-  "808000": "Olive",
-  "7FFFD4": "Aquamarine",
-  "FF4500": "Orange-Red",
-  "FF8C00": "Dark Orange",
-  "FFB6C1": "Light Pink",
-  "FF69B4": "Hot Pink",
-  "FF1493": "Deep Pink",
-  "8B0000": "Dark Red",
-  "DC143C": "Crimson",
-  "FFD700": "Gold",
-  "FFFFE0": "Light Yellow",
-  "F0E68C": "Khaki",
-  "BDB76B": "Dark Khaki",
-  "EE82EE": "Violet",
-  "8A2BE2": "Blue Violet",
-  "9400D3": "Dark Violet",
-  "4B0082": "Indigo",
-  "ADFF2F": "Green-Yellow",
-  "32CD32": "Lime Green",
-  "98FB98": "Pale Green",
-  "006400": "Dark Green",
-  "556B2F": "Dark Olive Green",
-  "008080": "Teal",
-  "E0FFFF": "Light Cyan",
-  "4682B4": "Steel Blue",
-  "B0C4DE": "Light Steel Blue",
-  "191970": "Midnight Blue",
-  "D2B48C": "Tan",
-  "D2691E": "Chocolate",
-  "DAA520": "Golden-Brown",
-  "B8860B": "Dark Golden-Brown",
-  "D3D3D3": "Light Grey",
-  "696969": "Dim Grey",
-  "FF7F50": "Soft Orange",
-  "FA8072": "Light Red-Orange",
-  "FFA07A": "Very Light Red-Orange",
-  "A0522D": "Red-Brown",
-  "F4A460": "Pale Brown",
-  "BC8F8F": "Soft Brown",
-  "CD853F": "Warm Brown",
-  "DA70D6": "Soft Purple",
-  "D8BFD8": "Pale Purple",
-  "E6E6FA": "Very Pale Purple",
-  "DDA0DD": "Light Purple",
-  "DB7093": "Soft Pink-Red",
-  "2E8B57": "Dark Green-Blue",
-  "3CB371": "Soft Green-Blue",
-  "00FF7F": "Bright Green",
-  "7FFF00": "Yellow-Green",
-  "6495ED": "Soft Blue",
-  "1E90FF": "Bright Blue",
-  "7B68EE": "Light Blue-Purple",
-  "483D8B": "Dark Blue-Purple",
-  "708090": "Blue-Grey",
-  "2F4F4F": "Dark Blue-Grey",
-  "FFDAB9": "Pale Orange",
-  "FFE4B5": "Very Pale Yellow",
-  "EEE8AA": "Soft Yellow",
-  "F5FFFA": "Very Pale Green",
-  "F0FFF0": "Pale Green",
-  "F0F8FF": "Very Pale Blue",
-  "F8F8FF": "Soft White",
-  "F5F5DC": "Very Pale Yellow-Brown"
-};
+let colourList = {};
+let eLabList = {};
+let totalList = [];
 
-const elabList = {
-  "51A2F3": "Grey",
-  "BCFFFE": "White",
-  "C2E5AE": "Pale Yellow",
-  "B09835": "Orange",
-  "9C6C4D": "Dull Red",
-  "6942AF": "Purple",
-  "0199FF": "Deep Blue",
-  "56F0D5": "Blue Green",
-  "BDE142": "Green Yellow",
-  "D0C686": "Orange",
-  "D7ADC4": "Rose Red",
-  "D27DFF": "Purple",
-  "00D089": "Green",
-  "FAC8FF": "Pink",
-  "CDECFF": "Pink/Green"
-};
+fetch('colours.json')
+  .then(response => response.json())
+  .then(data => {
+    colourList = data.colourList;
+    eLabList = data.elabList;
+    totalList = {...colourList};
+    // Now the global vars are populated and accessible
+    console.log("Fetched colours!");
+  })
+  .catch(error => console.error('Error loading JSON:', error));
 
-var totalList = {...colorList};
+// Can reference colourList/eLabList anywhere, but they'll be empty until fetch finishes
+
+
+////////////////////////////////////////
+// Colour-selecting tools
+////////////////////////////////////////
 
 
 // Takes a hex code string, returns three numbers
@@ -124,23 +41,23 @@ function rgbToHex(r, g, b) {
 }
 
 // Takes two numbers, returns a number
-function colorDistance(color1, color2) {
+function colourDistance(colour1, colour2) {
   return (
-    Math.pow(color1.r - color2.r, 2) +
-    Math.pow(color1.g - color2.g, 2) +
-    Math.pow(color1.b - color2.b, 2)
+    Math.pow(colour1.r - colour2.r, 2) +
+    Math.pow(colour1.g - colour2.g, 2) +
+    Math.pow(colour1.b - colour2.b, 2)
   )
 }
 
 // Takes totalList and a sample hex code, returns entry on totalList as array [hex_as_string, name_as_string]
-function closestColor(totalList, sample) {
+function closestcolour(totalList, sample) {
     const sampleRgb = hexToRgb(sample);
     let closestHex = null;
     let closestDistance = Infinity;
 
     for (const [hex, name] of Object.entries(totalList)) {
-        const colorRgb = hexToRgb(hex);
-        const distance = colorDistance(sampleRgb, colorRgb);
+        const colourRgb = hexToRgb(hex);
+        const distance = colourDistance(sampleRgb, colourRgb);
 
         if (distance < closestDistance) {
             closestDistance = distance;
@@ -186,7 +103,7 @@ function magZoom() {
 
 magZoom(); // Call magSize as initial setup
 
-// On mouseover, captures the page as a canvas then uses getImageData to get RGB of the clicked pixel, calls closestColor, and prints the output to the color_name element.
+// On mouseover, captures the page as a canvas then uses getImageData to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
 // Add mousemove event listener to the image
 document.getElementById("picker-image").addEventListener("mousemove", function(event) {
     const img = event.target;
@@ -200,18 +117,18 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
     // Draw the image onto the canvas
     ctx.drawImage(img, 0, 0, img.width, img.height);
 
-    // Get the mouseover'ed pixel's color
+    // Get the mouseover'ed pixel's colour
     const rect = img.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     const pixelData = ctx.getImageData(x+1, y+1, 1, 1).data;
 
     const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-    const [colorHex, colorName] = closestColor(totalList, hex);
+    const [colourHex, colourName] = closestcolour(totalList, hex);
 
-    // Update the paragraphs with the closest color name and hex code
-    document.getElementById("color-name").textContent = `${colorHex} - ${colorName}`;
-    document.getElementById("color-hex").textContent = `${hex}`;
+    // Update the paragraphs with the closest colour name and hex code
+    document.getElementById("colour-name").textContent = `${colourHex} - ${colourName}`;
+    document.getElementById("colour-hex").textContent = `${hex}`;
 
     // Update the progress bars with the RGB values
     document.getElementById("red-amount").style.width = `${pixelData[0]*100/255}%`;
@@ -220,9 +137,9 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
 
     // Get magnifying glass pixel colours
     for (var i=0;i<magPixels.length;i++) {
-      var magColorComponents = ctx.getImageData((x+1 - (magSize - 1)/2 + i%magSize), (y - (magSize - 1)/2 + i/magSize), 1, 1).data; // Gets x/y coords based on i
-      var magColor = rgbToHex(magColorComponents[0],magColorComponents[1],magColorComponents[2]);
-      magPixels.item(i).style.backgroundColor = "#" + magColor;
+      var magcolourComponents = ctx.getImageData((x+1 - (magSize - 1)/2 + i%magSize), (y - (magSize - 1)/2 + i/magSize), 1, 1).data; // Gets x/y coords based on i
+      var magcolour = rgbToHex(magcolourComponents[0],magcolourComponents[1],magcolourComponents[2]);
+      magPixels.item(i).style.backgroundcolor = "#" + magcolour;
     }
 });
 
@@ -258,7 +175,7 @@ document.getElementById('picker-image').addEventListener('click', function(event
   // Draw the image onto the canvas
   ctx.drawImage(img, 0, 0, img.width, img.height);
 
-  // Get the clicked pixel's color
+  // Get the clicked pixel's colour
   const rect = img.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
@@ -267,7 +184,7 @@ document.getElementById('picker-image').addEventListener('click', function(event
   // Update the pixel-list with the pixel details
   const pixelList = document.getElementById('pixel-list');
   var pixel = document.createElement('li');
-  pixel.appendChild(document.createTextNode(`${Math.round(x)}, ${Math.round(y)} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} \n ${closestColor(totalList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]}`));
+  pixel.appendChild(document.createTextNode(`${Math.round(x)}, ${Math.round(y)} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} \n ${closestcolour(totalList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]}`));
   pixelList.appendChild(pixel);
 });
 
@@ -280,8 +197,8 @@ document.getElementById('clear-button').addEventListener('click', function() {
 document.getElementById('copy-button').addEventListener('click', function() {
   navigator.clipboard.writeText(pixelListToString());
   // Make the list go grey briefly to indicate it's been copied
-  document.getElementById('pixel-list').style.backgroundColor = '#f0f0f0';
-  setTimeout(() => {{document.getElementById('pixel-list').style.backgroundColor = 'white';}}, 250);
+  document.getElementById('pixel-list').style.backgroundcolor = '#f0f0f0';
+  setTimeout(() => {{document.getElementById('pixel-list').style.backgroundcolor = 'white';}}, 250);
 });
 
 // Handles saving the pixel list to a file
@@ -389,12 +306,12 @@ elabCheck.addEventListener('change', function() {
   if (elabCheck.checked) {
     // Make ELAB mode
     document.getElementById('page-heading').textContent = "Pixel Whisperer - ELab Mode";
-    totalList = {...colorList, ...elabList};
+    totalList = {...colourList, ...elabList};
   }
   else {
     // Make normal
     document.getElementById('page-heading').textContent = "Pixel Whisperer - Turn picture colours into words.";
-    totalList = {...colorList};
+    totalList = {...colourList};
   }
 });
 
