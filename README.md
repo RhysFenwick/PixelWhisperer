@@ -11,9 +11,8 @@ This software is published under the [MIT License](https://opensource.org/licens
 [Color Name & Hue by Daniel Flueck](https://www.color-blindness.com/color-name-hue/)
 
 ## TODO
-- Make list of colours more consistent and fine-grained
 - Add picture zoom functionality
-- Split out colour list to a separate JSON
-- Make export a csv
+
+
 
 
