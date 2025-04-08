@@ -139,7 +139,7 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
     for (var i=0;i<magPixels.length;i++) {
       var magcolourComponents = ctx.getImageData((x+1 - (magSize - 1)/2 + i%magSize), (y - (magSize - 1)/2 + i/magSize), 1, 1).data; // Gets x/y coords based on i
       var magcolour = rgbToHex(magcolourComponents[0],magcolourComponents[1],magcolourComponents[2]);
-      magPixels.item(i).style.backgroundcolor = "#" + magcolour;
+      magPixels.item(i).style.backgroundColor = "#" + magcolour;
     }
 });
 
@@ -184,7 +184,7 @@ document.getElementById('picker-image').addEventListener('click', function(event
   // Update the pixel-list with the pixel details
   const pixelList = document.getElementById('pixel-list');
   var pixel = document.createElement('li');
-  pixel.appendChild(document.createTextNode(`${Math.round(x)}, ${Math.round(y)} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} \n ${closestcolour(totalList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]}`));
+  pixel.appendChild(document.createTextNode(`${Math.round(x)}, ${Math.round(y)} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} (${closestcolour(totalList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]})`));
   pixelList.appendChild(pixel);
 });
 
@@ -195,31 +195,45 @@ document.getElementById('clear-button').addEventListener('click', function() {
 
 // Handles copying the pixel list to the clipboard
 document.getElementById('copy-button').addEventListener('click', function() {
-  navigator.clipboard.writeText(pixelListToString());
+  navigator.clipboard.writeText(pixelListToString(document.getElementById('pixel-list')));
   // Make the list go grey briefly to indicate it's been copied
   document.getElementById('pixel-list').style.backgroundcolor = '#f0f0f0';
   setTimeout(() => {{document.getElementById('pixel-list').style.backgroundcolor = 'white';}}, 250);
 });
 
-// Handles saving the pixel list to a file
+// Handles saving the pixel list to a CSV
 document.getElementById('export-button').addEventListener('click', function() {
-  const blob = new Blob([pixelListToString()], { type: 'text/plain' });
+  const blob = new Blob([pixelListToCSV(document.getElementById('pixel-list'))], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'pixel-list.txt';
+  a.download = 'pixel-list.csv';
   a.click();
   URL.revokeObjectURL(url);
 });
 
-// Turns the pixel-list into a well-formatted string
-function pixelListToString() {
-  const pixelList = document.getElementById('pixel-list');
+// Turns the pixel-list into a well-formatted CSV
+function pixelListToCSV(pixelList) {
+  const rows = Array.from(pixelList.children).map(pixel => {
+    const line = pixel.textContent.trim(); // "472, 211 - D7D243 - Dark Khaki"
+    const [coordPart, colour] = line.split(' - ');
+    const [x, y] = coordPart.split(',').map(n => n.trim());
+    const [hex, name] = colour.split("(");
+    return `${x},${y},${hex.trim()},${name.trim().slice(0,-1)}`;
+  });
+
+  // Add header
+  rows.unshift('X Coord,Y Coord,Hex Code,Colour Name');
+
+  return rows.join('\n');
+}
+
+function pixelListToString(pixelList) {
   var pixelText = Array.from(pixelList.children).map(pixel => pixel.textContent).join('?');
   pixelText = pixelText.replaceAll("\n", "-");
   pixelText = pixelText.replaceAll('?', '\n');
   return pixelText;
-};
+}
 
 
 // Allows for image upload
