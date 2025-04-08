@@ -1,10 +1,19 @@
 ////////////////////////////////////////
-// Set up colour lists
+// Declarations
 ////////////////////////////////////////
 
 let colourList = {};
 let eLabList = {};
 let totalList = [];
+let zoom = 1;
+
+const horizontalLine = document.getElementById('horizontal-line');
+const verticalLine = document.getElementById('vertical-line');
+const pixelXY = document.getElementById('pixel-xy');
+
+////////////////////////////////////////
+// Set up colour lists
+////////////////////////////////////////
 
 fetch('colours.json')
   .then(response => response.json())
@@ -149,16 +158,12 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
 });
 
 // Handles crosshairs moving over image
-
 document.getElementById('picker-image').addEventListener('mousemove', function(event) {
-  const imgBox = event.currentTarget.parentElement;
+  const imgBox = event.currentTarget;
   const rect = imgBox.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-
-  const horizontalLine = document.getElementById('horizontal-line');
-  const verticalLine = document.getElementById('vertical-line');
-  const pixelXY = document.getElementById('pixel-xy');
+  const x = event.clientX - rect.x - rect.width * (1 - 1/zoom)/2;
+  console.log(x)
+  const y = event.clientY - rect.y - rect.height * (1 - 1/zoom)/2;
 
   horizontalLine.style.top = `${y}px`;
   verticalLine.style.left = `${x}px`;
@@ -239,20 +244,6 @@ function pixelListToString(pixelList) {
   pixelText = pixelText.replaceAll('?', '\n');
   return pixelText;
 }
-
-
-// Allows for image upload
-document.getElementById('image-upload').addEventListener('change', function(event) {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('picker-image').src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-});
-
 // Handle image upload
 document.getElementById('image-upload').addEventListener('change', function(event) {
   const file = event.target.files[0];
@@ -334,8 +325,28 @@ elabCheck.addEventListener('change', function() {
   }
 });
 
+// Listener for zoom functionality
+document.querySelectorAll('input[name="zoom"]').forEach(radio => {
+  radio.addEventListener('change', function () {
+    // Sets zoom
+    zoom = parseFloat(this.value);
+    const img = document.getElementById('picker-image');
+
+    img.style.transform = `scale(${zoom})`;
+
+    // Lengthen the crosshairs but keep them narrow
+    horizontalLine.style.transform = `scale(${zoom},1)`;
+    verticalLine.style.transform = `scale(1,${zoom})`;
+
+  });
+});
+
+
 // Function to call on page load
 function init() {
   // Uncheck ELAB mode
   elabCheck.checked = false;
+
+  // Make sure the correct zoom radio button is checked
+  document.getElementById('zoom-1').click();
 };

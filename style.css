@@ -95,12 +95,32 @@ footer {
 #img-box {
     width: 100%;
     position: relative;
+    overflow: auto;
 }
 
 #picker-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+#zoom-options {
+    display: flex;
+    justify-content: center;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+input[name="zoom"] {
+    padding: 0;
+    margin: 0;
+}
+
+.zoom-labels {
+    padding: 0;
+    margin-left: 1em;
+    margin-right: 0.2em;
 }
 
 /* Middle column */
