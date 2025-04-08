@@ -11,7 +11,7 @@ This software is published under the [MIT License](https://opensource.org/licens
 [Color Name & Hue by Daniel Flueck](https://www.color-blindness.com/color-name-hue/)
 
 ## TODO
-- Add picture zoom functionality
+- Fix transformOrigin function
 
 
 

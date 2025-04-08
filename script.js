@@ -337,14 +337,14 @@ document.querySelectorAll('input[name="zoom"]').forEach(radio => {
   radio.addEventListener('change', function () {
     // Sets zoom
     zoom = parseFloat(this.value);
-    const img = document.getElementById('picker-image');
 
+    const img = document.getElementById('picker-image');
+    img.style.transformOrigin = `${img.scrollLeft}px,${img.scrollTop}px`; // TODO: Get this to work
     img.style.transform = `scale(${zoom})`;
 
     // Lengthen the crosshairs but keep them narrow
     horizontalLine.style.transform = `scale(${zoom},1)`;
     verticalLine.style.transform = `scale(1,${zoom})`;
-
   });
 });
 
