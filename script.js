@@ -7,6 +7,10 @@ let eLabList = {};
 let totalList = [];
 let zoom = 1;
 
+// The x/y coordinates of the selected pixel (zoom-invariant: the bottom right of a 100x100 pic will be 100,100 even when zoomed)
+let relativeX = 0;
+let relativeY = 0;
+
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
 const pixelXY = document.getElementById('pixel-xy');
@@ -152,7 +156,7 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
     // Get magnifying glass pixel colours
     for (var i=0;i<magPixels.length;i++) {
       var magPixelX = (x+1 - (magSize - 1)/2 + i%magSize)/zoom;
-      var magPixelY = (y - (magSize - 1)/2 + i/magSize)/zoom - 1;
+      var magPixelY = (y - (magSize - 1)/2 + i/magSize)/zoom;
 
       if (i%magSize < (magSize - 1)/2) {
         magPixelY += (1/zoom)/2;
@@ -175,7 +179,10 @@ document.getElementById('picker-image').addEventListener('mousemove', function(e
   verticalLine.style.left = `${x}px`;
 
   // This formula's messy as I'm compensating for weird glitches around the edges
-  pixelXY.textContent = `${Math.ceil((event.clientX - rect.x+1)/zoom)} right, ${Math.ceil((event.clientY - rect.y + (1 - 1/zoom))/zoom)} down`;
+  relativeX = Math.ceil((event.clientX - rect.x+1)/zoom)
+  relativeY = Math.ceil((event.clientY - rect.y + (1 - 1/zoom))/zoom)
+
+  pixelXY.textContent = `${relativeX} right, ${relativeY} down`;
 });
 
 // Handles selecting pixels in the image
@@ -339,8 +346,15 @@ document.querySelectorAll('input[name="zoom"]').forEach(radio => {
     zoom = parseFloat(this.value);
 
     const img = document.getElementById('picker-image');
-    img.style.transformOrigin = `${img.scrollLeft}px,${img.scrollTop}px`; // TODO: Get this to work
     img.style.transform = `scale(${zoom})`;
+    img.parentElement.scrollTop = relativeY*zoom;
+    img.parentElement.scrollLeft = relativeX*zoom;
+
+    // Try to make it pixellated
+    img.style.imageRendering = 'pixelated';
+    img.style.setProperty('image-rendering', '-moz-crisp-edges');
+    img.style.setProperty('image-rendering', 'crisp-edges');
+    img.style.setProperty('image-rendering', '-o-pixelated');
 
     // Lengthen the crosshairs but keep them narrow
     horizontalLine.style.transform = `scale(${zoom},1)`;
