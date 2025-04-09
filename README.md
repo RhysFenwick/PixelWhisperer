@@ -15,6 +15,7 @@ This software is published under the [MIT License](https://opensource.org/licens
 - Make crosshairs fall on pixel, not between them
 - Add credits
 - Arrows move one pixel at a time
+- Make scrollbars fall outside image if possible
 
 
 

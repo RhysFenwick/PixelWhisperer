@@ -215,6 +215,10 @@ pic.addEventListener('click', function(event) {
   pixelList.appendChild(pixel);
 });
 
+////////////////////////////////////////
+// Pixel info buttons
+////////////////////////////////////////
+
 // Handles clearing the pixel list - TODO: Add confirmation dialog
 document.getElementById('clear-button').addEventListener('click', function() {
   document.getElementById('pixel-list').innerHTML = '';
@@ -261,6 +265,18 @@ function pixelListToString(pixelList) {
   pixelText = pixelText.replaceAll('?', '\n');
   return pixelText;
 }
+
+////////////////////////////////////////
+// New image buttons
+////////////////////////////////////////
+
+// General refresh function
+function refreshImage() {
+  // Lengthen the crosshairs but keep them narrow
+  horizontalLine.style.width = `${pic.width*zoom}px`;
+  verticalLine.style.height = `${pic.height*zoom}px`;
+}
+
 // Handle image upload
 document.getElementById('image-upload').addEventListener('change', function(event) {
   const file = event.target.files[0];
@@ -268,6 +284,7 @@ document.getElementById('image-upload').addEventListener('change', function(even
     const reader = new FileReader();
     reader.onload = function(e) {
     pic.src = e.target.result;
+    refreshImage();
     };
     reader.readAsDataURL(file);
   }
@@ -299,6 +316,7 @@ cameraButton.addEventListener('click', async () => {
 
         // Set captured image to the <img> element
         pic.src = canvas.toDataURL('image/png');
+        refreshImage();
 
         // Stop the video stream and hide the preview - doesn;t seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
@@ -351,15 +369,7 @@ document.querySelectorAll('input[name="zoom"]').forEach(radio => {
     frame.parentElement.scrollTop = relativeY*zoom;
     frame.parentElement.scrollLeft = relativeX*zoom;
 
-    // Try to make it pixellated
-    pic.style.imageRendering = 'pixelated';
-    pic.style.setProperty('image-rendering', '-moz-crisp-edges');
-    pic.style.setProperty('image-rendering', 'crisp-edges');
-    pic.style.setProperty('image-rendering', '-o-pixelated');
-
-    // Lengthen the crosshairs but keep them narrow
-    horizontalLine.style.width = `${pic.width*zoom}px`;
-    verticalLine.style.height = `${pic.height*zoom}px`;
+    refreshImage();
   });
 });
 
