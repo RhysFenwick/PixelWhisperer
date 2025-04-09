@@ -1,5 +1,5 @@
 ////////////////////////////////////////
-// Declarations
+// Declarations and set-up
 ////////////////////////////////////////
 
 let colourList = {};
@@ -14,6 +14,11 @@ let relativeY = 0;
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
 const pixelXY = document.getElementById('pixel-xy');
+
+const pic = document.getElementById('picker-image');
+const frame = document.getElementById('picture-frame');
+horizontalLine.style.width = `${pic.width}px`;
+verticalLine.style.height = `${pic.height}px`;
 
 ////////////////////////////////////////
 // Set up colour lists
@@ -123,20 +128,19 @@ magZoom(); // Call magSize as initial setup
 
 // On mouseover, captures the page as a canvas then uses getImageData to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
 // Add mousemove event listener to the image
-document.getElementById("picker-image").addEventListener("mousemove", function(event) {
-    const img = event.target;
+pic.addEventListener("mousemove", function(event) {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
     // Set canvas dimensions to the image dimensions
-    canvas.width = img.width;
-    canvas.height = img.height;
+    canvas.width = pic.width;
+    canvas.height = pic.height;
 
     // Draw the image onto the canvas
-    ctx.drawImage(img, 0, 0, img.width, img.height);
+    ctx.drawImage(pic, 0, 0, pic.width, pic.height);
 
     // Get the mouseover'ed pixel's colour
-    const rect = img.getBoundingClientRect();
+    const rect = pic.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     const pixelData = ctx.getImageData((x+1)/zoom, (y+1)/zoom, 1, 1).data;
@@ -169,25 +173,24 @@ document.getElementById("picker-image").addEventListener("mousemove", function(e
 });
 
 // Handles crosshairs moving over image
-document.getElementById('picker-image').addEventListener('mousemove', function(event) {
-  const imgBox = event.currentTarget;
-  const rect = imgBox.getBoundingClientRect();
-  const x = event.clientX - rect.x - rect.width * (1 - 1/zoom)/2;
-  const y = event.clientY - rect.y - rect.height * (1 - 1/zoom)/2;
+pic.addEventListener('mousemove', function(event) {
+  const rect = document.getElementById('img-box').getBoundingClientRect();
+  const x = event.offsetX;
+  const y = event.offsetY;
 
-  horizontalLine.style.top = `${y}px`;
-  verticalLine.style.left = `${x}px`;
+  horizontalLine.style.top = `${y*zoom}px`;
+  verticalLine.style.left = `${x*zoom}px`;
 
   // This formula's messy as I'm compensating for weird glitches around the edges
-  relativeX = Math.ceil((event.clientX - rect.x+1)/zoom)
-  relativeY = Math.ceil((event.clientY - rect.y + (1 - 1/zoom))/zoom)
+  relativeX = Math.floor(x)+1;
+  relativeY = Math.floor(y)+1;
 
   pixelXY.textContent = `${relativeX} right, ${relativeY} down`;
 });
 
 // Handles selecting pixels in the image
 
-document.getElementById('picker-image').addEventListener('click', function(event) {
+pic.addEventListener('click', function(event) {
   const img = event.target;
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -264,7 +267,7 @@ document.getElementById('image-upload').addEventListener('change', function(even
   if (file) {
     const reader = new FileReader();
     reader.onload = function(e) {
-    document.getElementById('picker-image').src = e.target.result;
+    pic.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
@@ -274,7 +277,6 @@ document.getElementById('image-upload').addEventListener('change', function(even
 const cameraButton = document.getElementById('camera-button');
 const closeButton = document.getElementById('camera-close-button');
 const video = document.getElementById('camera-preview');
-const img = document.getElementById('picker-image');
 
 // Camera button logic
 cameraButton.addEventListener('click', async () => {
@@ -296,7 +298,7 @@ cameraButton.addEventListener('click', async () => {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         // Set captured image to the <img> element
-        img.src = canvas.toDataURL('image/png');
+        pic.src = canvas.toDataURL('image/png');
 
         // Stop the video stream and hide the preview - doesn;t seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
@@ -345,20 +347,19 @@ document.querySelectorAll('input[name="zoom"]').forEach(radio => {
     // Sets zoom
     zoom = parseFloat(this.value);
 
-    const img = document.getElementById('picker-image');
-    img.style.transform = `scale(${zoom})`;
-    img.parentElement.scrollTop = relativeY*zoom;
-    img.parentElement.scrollLeft = relativeX*zoom;
+    frame.style.transform = `scale(${zoom})`;
+    frame.parentElement.scrollTop = relativeY*zoom;
+    frame.parentElement.scrollLeft = relativeX*zoom;
 
     // Try to make it pixellated
-    img.style.imageRendering = 'pixelated';
-    img.style.setProperty('image-rendering', '-moz-crisp-edges');
-    img.style.setProperty('image-rendering', 'crisp-edges');
-    img.style.setProperty('image-rendering', '-o-pixelated');
+    pic.style.imageRendering = 'pixelated';
+    pic.style.setProperty('image-rendering', '-moz-crisp-edges');
+    pic.style.setProperty('image-rendering', 'crisp-edges');
+    pic.style.setProperty('image-rendering', '-o-pixelated');
 
     // Lengthen the crosshairs but keep them narrow
-    horizontalLine.style.transform = `scale(${zoom},1)`;
-    verticalLine.style.transform = `scale(1,${zoom})`;
+    horizontalLine.style.width = `${pic.width*zoom}px`;
+    verticalLine.style.height = `${pic.height*zoom}px`;
   });
 });
 

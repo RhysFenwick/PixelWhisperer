@@ -11,7 +11,10 @@ This software is published under the [MIT License](https://opensource.org/licens
 [Color Name & Hue by Daniel Flueck](https://www.color-blindness.com/color-name-hue/)
 
 ## TODO
-- Fix transformOrigin function
+- Add a "do you want to compress this image" function
+- Make crosshairs fall on pixel, not between them
+- Add credits
+- Arrows move one pixel at a time
 
 
 
