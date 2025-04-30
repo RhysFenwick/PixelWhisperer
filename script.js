@@ -159,8 +159,8 @@ pic.addEventListener("mousemove", function(event) {
 
     // Get magnifying glass pixel colours
     for (var i=0;i<magPixels.length;i++) {
-      var magPixelX = (x - (magSize - 1)/2 + i%magSize)/zoom;
-      var magPixelY = (y - (magSize - 1)/2 + Math.floor(i/magSize))/zoom;
+      var magPixelX = (x + Math.floor((zoom-1)/2) - (magSize - 1)/2 + i%magSize)/zoom;
+      var magPixelY = (y + Math.floor((zoom-1)/2) - (magSize - 1)/2 + Math.floor(i/magSize))/zoom;
 
       if (i%magSize < (magSize - 1)/2) {
         magPixelY += (1/zoom)/2;
@@ -177,7 +177,6 @@ pic.addEventListener('mousemove', function(event) {
   const rect = document.getElementById('img-box').getBoundingClientRect();
   const x = event.offsetX;
   const y = event.offsetY;
-  console.log(x,y);
 
   horizontalLine.style.top = `${y*zoom}px`;
   verticalLine.style.left = `${x*zoom}px`;
