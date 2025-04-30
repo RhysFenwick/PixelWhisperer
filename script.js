@@ -141,9 +141,9 @@ pic.addEventListener("mousemove", function(event) {
 
     // Get the mouseover'ed pixel's colour
     const rect = pic.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const pixelData = ctx.getImageData((x+1)/zoom, (y+1)/zoom, 1, 1).data;
+    const x = event.clientX - Math.floor(rect.left);
+    const y = event.clientY - Math.floor(rect.top);
+    const pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
 
     const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
     const [colourHex, colourName] = closestcolour(totalList, hex);
@@ -159,8 +159,8 @@ pic.addEventListener("mousemove", function(event) {
 
     // Get magnifying glass pixel colours
     for (var i=0;i<magPixels.length;i++) {
-      var magPixelX = (x+1 - (magSize - 1)/2 + i%magSize)/zoom;
-      var magPixelY = (y - (magSize - 1)/2 + i/magSize)/zoom;
+      var magPixelX = (x - (magSize - 1)/2 + i%magSize)/zoom;
+      var magPixelY = (y - (magSize - 1)/2 + Math.floor(i/magSize))/zoom;
 
       if (i%magSize < (magSize - 1)/2) {
         magPixelY += (1/zoom)/2;
@@ -177,15 +177,12 @@ pic.addEventListener('mousemove', function(event) {
   const rect = document.getElementById('img-box').getBoundingClientRect();
   const x = event.offsetX;
   const y = event.offsetY;
+  console.log(x,y);
 
   horizontalLine.style.top = `${y*zoom}px`;
   verticalLine.style.left = `${x*zoom}px`;
 
-  // This formula's messy as I'm compensating for weird glitches around the edges
-  relativeX = Math.floor(x)+1;
-  relativeY = Math.floor(y)+1;
-
-  pixelXY.textContent = `${relativeX} right, ${relativeY} down`;
+  pixelXY.textContent = `${x} right, ${y} down`;
 });
 
 // Handles selecting pixels in the image
@@ -318,7 +315,7 @@ cameraButton.addEventListener('click', async () => {
         pic.src = canvas.toDataURL('image/png');
         refreshImage();
 
-        // Stop the video stream and hide the preview - doesn;t seem to work, added proxy above instead.
+        // Stop the video stream and hide the preview - doesn't seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
         video.style.display = 'none';
         cameraButton.textContent = 'Take Photo'; // Reset button text
