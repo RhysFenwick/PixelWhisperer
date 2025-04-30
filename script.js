@@ -200,10 +200,10 @@ pic.addEventListener('click', function(event) {
   ctx.drawImage(img, 0, 0, img.width, img.height);
 
   // Get the clicked pixel's colour
-  const rect = img.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  const pixelData = ctx.getImageData(x+1, y+1, 1, 1).data;
+  const rect = pic.getBoundingClientRect();
+  const x = event.clientX - Math.floor(rect.left);
+  const y = event.clientY - Math.floor(rect.top);
+  const pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
 
   // Update the pixel-list with the pixel details
   const pixelList = document.getElementById('pixel-list');
