@@ -6,6 +6,7 @@ let colourList = {};
 let eLabList = {};
 let totalList = [];
 let zoom = 1;
+let inv_zoom = 1; // Zoom used for zooming out - relevant in some ways but not others!
 
 // The x/y coordinates of the selected pixel (zoom-invariant: the bottom right of a 100x100 pic will be 100,100 even when zoomed)
 let relativeX = 0;
@@ -16,6 +17,7 @@ const verticalLine = document.getElementById('vertical-line');
 const pixelXY = document.getElementById('pixel-xy');
 
 const pic = document.getElementById('picker-image');
+const original_pic = document.getElementById('original-image'); // Used as a backup for zoom-out
 const frame = document.getElementById('picture-frame');
 horizontalLine.style.width = `${pic.width}px`;
 verticalLine.style.height = `${pic.height}px`;
@@ -181,7 +183,7 @@ pic.addEventListener('mousemove', function(event) {
   horizontalLine.style.top = `${y*zoom}px`;
   verticalLine.style.left = `${x*zoom}px`;
 
-  pixelXY.textContent = `${x} right, ${y} down`;
+  pixelXY.textContent = `${x*inv_zoom} right, ${y*inv_zoom} down`;
 });
 
 // Handles selecting pixels in the image
@@ -280,6 +282,7 @@ document.getElementById('image-upload').addEventListener('change', function(even
     const reader = new FileReader();
     reader.onload = function(e) {
     pic.src = e.target.result;
+    original_pic.src = e.target.result; // Set the backup image to the uploaded one
     refreshImage();
     };
     reader.readAsDataURL(file);
@@ -312,6 +315,7 @@ cameraButton.addEventListener('click', async () => {
 
         // Set captured image to the <img> element
         pic.src = canvas.toDataURL('image/png');
+        original_pic.src = canvas.toDataURL('image/png'); // Set the backup image to the captured one
         refreshImage();
 
         // Stop the video stream and hide the preview - doesn't seem to work, added proxy above instead.
@@ -359,15 +363,67 @@ elabCheck.addEventListener('change', function() {
 document.querySelectorAll('input[name="zoom"]').forEach(radio => {
   radio.addEventListener('change', function () {
     // Sets zoom
-    zoom = parseFloat(this.value);
+    const selected_zoom = parseFloat(this.value);
+
+    if (selected_zoom < 1) { // Zooming out
+      zoom = 1;
+      inv_zoom = 1/selected_zoom; // E.g. will be 2 for 0.5x zoom
+      downsampleImage(pic,original_pic,inv_zoom);
+    }
+    else {
+      pic.src = original_pic.src; // Reset to original image
+      zoom = selected_zoom;
+      inv_zoom = 1;
+    }
+
 
     frame.style.transform = `scale(${zoom})`;
     frame.parentElement.scrollTop = relativeY*zoom;
     frame.parentElement.scrollLeft = relativeX*zoom;
-
     refreshImage();
   });
 });
+
+function downsampleImage(outElement, inElement, zoomout) {
+  const w = inElement.naturalWidth;
+  const h = inElement.naturalHeight;
+
+  const inputCanvas = document.createElement('canvas');
+  const ctx = inputCanvas.getContext('2d');
+  inputCanvas.width = w;
+  inputCanvas.height = h;
+  ctx.drawImage(inElement, 0, 0);
+
+  const inputData = ctx.getImageData(0, 0, w, h).data;
+
+  const outW = Math.floor(w / zoomout);
+  const outH = Math.floor(h / zoomout);
+
+  const outputCanvas = document.createElement('canvas');
+  const outputCtx = outputCanvas.getContext('2d');
+  outputCanvas.width = outW;
+  outputCanvas.height = outH;
+  const outputImageData = outputCtx.createImageData(outW, outH);
+  const outputData = outputImageData.data;
+
+  for (let y = 0; y < outH; y++) {
+    for (let x = 0; x < outW; x++) {
+      const srcX = x * zoomout;
+      const srcY = y * zoomout;
+      const srcIndex = (srcY * w + srcX) * 4;
+      const dstIndex = (y * outW + x) * 4;
+
+      for (let i = 0; i < 4; i++) {
+        outputData[dstIndex + i] = inputData[srcIndex + i]; // copy RGBA
+      }
+    }
+  }
+
+  outputCtx.putImageData(outputImageData, 0, 0);
+  outElement.src = outputCanvas.toDataURL();
+}
+
+
 
 
 // Function to call on page load
