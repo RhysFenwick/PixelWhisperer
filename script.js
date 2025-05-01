@@ -162,8 +162,8 @@ pic.addEventListener("mousemove", function(event) {
     // Get magnifying glass pixel colours
     for (var i=0;i<magPixels.length;i++) {
       // These formulae are hideous and need fixing - a mess of edge cases atm
-      var magPixelX = (x  - (magSize - 1)/2 + i%magSize)/zoom + Math.floor(zoom/2);
-      var magPixelY = (y  - (magSize - 1)/2 + Math.floor(i/magSize))/zoom + Math.floor(zoom/2);
+      var magPixelX = Math.floor((x  - (magSize - 1)/2 + i%magSize)/zoom) + (1-zoom%2);
+      var magPixelY = Math.floor((y  - (magSize - 1)/2 + Math.floor(i/magSize))/zoom) + (1-zoom%2);
 
       if (i%magSize < (magSize - 1)/2) {
         magPixelY += (1/zoom)/2;
@@ -346,12 +346,14 @@ magSlider.oninput = function() {
   magZoom();
 }
 
-// Listener for ELAB checkbox toggle
+// ELAB checkbox toggle
 const elabCheck = document.getElementById('elab-mode');
-elabCheck.addEventListener('change', function() {
+
+// ELAB changer
+function elabChanger() {
   if (elabCheck.checked) {
     // Make ELAB mode
-    document.getElementById('page-heading').textContent = "Pixel Whisperer - ELab Mode";
+    document.getElementById('page-heading').textContent = "Pixel Whisperer - Turn colours into words.";
     totalList = eLabList
   }
   else {
@@ -359,6 +361,12 @@ elabCheck.addEventListener('change', function() {
     document.getElementById('page-heading').textContent = "Pixel Whisperer - Turn picture colours into words.";
     totalList = colourList
   }
+}
+
+
+// Event listener for ELAB checkbox
+elabCheck.addEventListener('change', function() {
+  elabChanger();
 });
 
 // Listener for zoom functionality
@@ -430,8 +438,9 @@ function downsampleImage(outElement, inElement, zoomout) {
 
 // Function to call on page load
 function init() {
-  // Uncheck ELAB mode
-  elabCheck.checked = false;
+  // Check ELAB mode by default (and call change function)
+  elabCheck.checked = true;
+  elabChanger();
 
   // Make sure the correct zoom radio button is checked
   document.getElementById('zoom-1').click();
