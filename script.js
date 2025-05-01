@@ -161,8 +161,9 @@ pic.addEventListener("mousemove", function(event) {
 
     // Get magnifying glass pixel colours
     for (var i=0;i<magPixels.length;i++) {
-      var magPixelX = (x + Math.floor((zoom-1)/2) - (magSize - 1)/2 + i%magSize)/zoom;
-      var magPixelY = (y + Math.floor((zoom-1)/2) - (magSize - 1)/2 + Math.floor(i/magSize))/zoom;
+      // These formulae are hideous and need fixing - a mess of edge cases atm
+      var magPixelX = (x  - (magSize - 1)/2 + i%magSize)/zoom + Math.floor(zoom/2);
+      var magPixelY = (y  - (magSize - 1)/2 + Math.floor(i/magSize))/zoom + Math.floor(zoom/2);
 
       if (i%magSize < (magSize - 1)/2) {
         magPixelY += (1/zoom)/2;
@@ -208,8 +209,9 @@ pic.addEventListener('click', function(event) {
 
   // Update the pixel-list with the pixel details
   const pixelList = document.getElementById('pixel-list');
-  var pixel = document.createElement('li');
-  pixel.appendChild(document.createTextNode(`${Math.round(x)}, ${Math.round(y)} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} (${closestcolour(totalList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]})`));
+  const pixel = document.createElement('li');
+  const pixel_xy = document.getElementById('pixel-xy').textContent.split(' '); // Array
+  pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} (${closestcolour(totalList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]})`));
   pixelList.appendChild(pixel);
 });
 
