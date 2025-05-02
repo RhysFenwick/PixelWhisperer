@@ -188,11 +188,13 @@ pic.addEventListener("mousemove", function(event) {
   document.getElementById("green-amount").style.width = `${pixelData[1] * 100 / 255}%`;
   document.getElementById("blue-amount").style.width = `${pixelData[2] * 100 / 255}%`;
 
+  
   for (let i = 0; i < magPixels.length; i++) {
-    let magPixelX = Math.floor((x - (magSize - 1)/2 + i % magSize)/zoom) + (1 - zoom % 2);
-    let magPixelY = Math.floor((y - (magSize - 1)/2 + Math.floor(i / magSize))/zoom) + (1 - zoom % 2);
+    const magRow = Math.floor(i / magSize) -1; // Row number in the magnifying glass
+    const magCol = i % magSize -1; // Column number in the magnifying glass
 
-
+    let magPixelX = Math.floor((x - (magSize - 1)/2 + magCol)/zoom);
+    let magPixelY = Math.floor((y - (magSize - 1)/2 + magRow)/zoom);
 
     const magData = getPixelFromFullData(magPixelX, magPixelY);
     const magColour = rgbToHex(magData[0], magData[1], magData[2]);
@@ -201,7 +203,7 @@ pic.addEventListener("mousemove", function(event) {
 
   horizontalLine.style.top = `${y}px`;
   verticalLine.style.left = `${x}px`;
-  pixelXY.textContent = `${x * inv_zoom} right, ${y * inv_zoom} down`;
+  pixelXY.textContent = `${Math.ceil(x * inv_zoom / zoom)} right, ${Math.ceil(y * inv_zoom / zoom)} down`;
 });
 
 
