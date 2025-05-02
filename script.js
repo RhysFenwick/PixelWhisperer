@@ -373,28 +373,35 @@ elabCheck.addEventListener('change', function() {
 // Listener for zoom functionality
 document.querySelectorAll('input[name="zoom"]').forEach(radio => {
   radio.addEventListener('change', function () {
-    // Sets zoom
+    
+    // Gets selected zoom value from radio button...
     const selected_zoom = parseFloat(this.value);
 
-    if (selected_zoom < 1) { // Zooming out
-      zoom = 1;
-      inv_zoom = 1/selected_zoom; // E.g. will be 2 for 0.5x zoom
-      downsampleImage(pic,original_pic,inv_zoom);
-    }
-    else {
-      pic.src = original_pic.src; // Reset to original image
-      zoom = selected_zoom;
-      inv_zoom = 1;
-    }
-
-
-    frame.style.transform = `scale(${zoom})`;
-    frame.parentElement.scrollTop = relativeY*zoom;
-    frame.parentElement.scrollLeft = relativeX*zoom;
-    refreshImage();
+    // ...and calls the changeZoom function with it
+    changeZoom(selected_zoom);
   });
 });
 
+// Function to change zoom
+function changeZoom(selected_zoom) {
+  if (selected_zoom < 1) { // Zooming out
+    zoom = 1;
+    inv_zoom = 1/selected_zoom; // E.g. will be 2 for 0.5x zoom
+    downsampleImage(pic,original_pic,inv_zoom);
+  }
+  else {
+    pic.src = original_pic.src; // Reset to original image
+    zoom = selected_zoom;
+    inv_zoom = 1;
+  }
+
+  frame.style.transform = `scale(${zoom})`;
+  frame.parentElement.scrollTop = relativeY*zoom;
+  frame.parentElement.scrollLeft = relativeX*zoom;
+  refreshImage();
+}
+
+// Shrinks image for zoom-out functionality
 function downsampleImage(outElement, inElement, zoomout) {
   const w = inElement.naturalWidth;
   const h = inElement.naturalHeight;
@@ -461,6 +468,7 @@ function debug(onOff) {
   else {
     console.log("Debug mode off!");
     debugClass.style.display = 'none'; // Hides all elements with the debug class
+    changeZoom(1); // Resets zoom to 1
   }
 }
 
