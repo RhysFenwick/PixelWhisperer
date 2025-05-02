@@ -109,7 +109,6 @@ const magPixels = document.getElementById("mag-glass").children; // HTMLCollecti
 
 // Changes the magnifying glass to the chosen resolution
 function magZoom() {
-  console.log(magSize);
   // Set grid styling as a square
   magGlass.style.gridTemplate = "auto ".repeat(magSize).concat("/ ","auto ".repeat(magSize));
 
@@ -455,7 +454,7 @@ function debug(onOff) {
   // Loop through the CSS rules to find the target class
   for (let rule of sheet.cssRules) {
     if (rule.selectorText === '.debug') {
-      debugClass  = rule; // Save the debug class
+      debugClass = rule; // Save the debug class
       break;
     }
   }
