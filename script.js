@@ -12,6 +12,8 @@ let inv_zoom = 1; // Zoom used for zooming out - relevant in some ways but not o
 let relativeX = 0;
 let relativeY = 0;
 
+let debug = false; // Debug mode - only works on localhost or if the debug sequence is entered
+
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
 const pixelXY = document.getElementById('pixel-xy');
@@ -444,7 +446,7 @@ if (!(window.location.hostname === "localhost" || window.location.hostname === "
 }
 
 function debug(onOff) {
-  
+  debug = true;
   // Find the stylesheet (in this case the first/only one)
   const sheet = document.styleSheets[0];
 
@@ -483,6 +485,7 @@ document.addEventListener('keydown', function(event) {
 
     if (inputSequence.join('') === debugSequence.join('')) {
         console.log('Sequence matched!');
+        debug(true); // Call the debug function
         inputSequence = []; // Reset sequence after match
     }
 });
