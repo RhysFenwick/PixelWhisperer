@@ -112,7 +112,7 @@ footer {
     transform-origin: top left;
 }
 
-#zoom-options {
+.zoom-options {
     display: flex;
     justify-content: center;
     border: 0;
