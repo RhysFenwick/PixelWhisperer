@@ -438,14 +438,8 @@ function downsampleImage(outElement, inElement, zoomout) {
 // Debug logic
 ////////////////////////////////////////
 
-// Debug mode - should only trigger on localhost
-if (!(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) { // Real
-  console.log("Removing debug features");
-  debug(false); // Turn off debug mode
-}
-
 function debug(onOff) {
-  debug = true;
+  debugMode = true;
   // Find the stylesheet (in this case the first/only one)
   const sheet = document.styleSheets[0];
 
@@ -474,9 +468,11 @@ function debug(onOff) {
 
 let inputSequence = [];
 const debugSequence = ['d', 'e', 'b', 'u', 'g']; // The sequence to trigger debug mode
+const hideDebugSequence = ['r', 'e', 's', 'e','t']; // The sequence to hide debug mode
 
 document.addEventListener('keydown', function(event) {
     inputSequence.push(event.key);
+    console.log(event.key); // Log the key pressed
 
     if (inputSequence.length > debugSequence.length) {
         inputSequence.shift(); // Remove the oldest input if it exceeds the target length
@@ -487,7 +483,18 @@ document.addEventListener('keydown', function(event) {
         debug(true); // Call the debug function
         inputSequence = []; // Reset sequence after match
     }
+    else if (inputSequence.join('') === hideDebugSequence.join('')) {
+        console.log('Reset sequence matched!');
+        debug(false); // Call the debug function
+        inputSequence = []; // Reset sequence after match
+    }
 });
+
+// Runs it initially
+if (!(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) { // Real
+  console.log("Removing debug features");
+  debug(false); // Turn off debug mode
+}
 
 ////////////////////////////////////////
 // Initisalisation
