@@ -31,9 +31,10 @@ fetch('colours.json')
   .then(data => {
     colourList = data.colourList;
     eLabList = data.elabList;
-    totalList = colourList;
+    totalList = eLabList; // Default to ELAB list
     // Now the global vars are populated and accessible
     console.log("Fetched colours!");
+    console.log(eLabList);
   })
   .catch(error => console.error('Error loading JSON:', error));
 
@@ -433,7 +434,11 @@ function downsampleImage(outElement, inElement, zoomout) {
   outElement.src = outputCanvas.toDataURL();
 }
 
-
+// Debug mode - should only trigger on localhost
+if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  console.log("Debug mode activated!");
+  document.getElementById('zoom-options').style.display = 'flex';
+}
 
 
 // Function to call on page load
