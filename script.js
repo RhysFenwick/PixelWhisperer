@@ -2,27 +2,24 @@
 // Declarations and set-up
 ////////////////////////////////////////
 
-let colourList = {};
-let eLabList = {};
-let totalList = [];
-let zoom = 1;
-let inv_zoom = 1; // Zoom used for zooming out - relevant in some ways but not others!
-
-// The x/y coordinates of the selected pixel (zoom-invariant: the bottom right of a 100x100 pic will be 100,100 even when zoomed)
-let relativeX = 0;
-let relativeY = 0;
-
-let debugMode = false; // Debug mode - only works on localhost or if the debug sequence is entered
+let colourList = {}, eLabList = {}, totalList = [];
+let zoom = 1, inv_zoom = 1;
+let relativeX = 0, relativeY = 0;
+let debugMode = false;  
+let fullImageData, fullData; // Will hold the full image data to prevent many calls to getImageData
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
 const pixelXY = document.getElementById('pixel-xy');
-
 const pic = document.getElementById('picker-image');
-const original_pic = document.getElementById('original-image'); // Used as a backup for zoom-out
+const original_pic = document.getElementById('original-image'); // Backup image for zooming out
 const frame = document.getElementById('picture-frame');
 horizontalLine.style.width = `${pic.width}px`;
 verticalLine.style.height = `${pic.height}px`;
+
+// Set up canvas; blank until picture load
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
 ////////////////////////////////////////
 // Set up colour lists
@@ -31,9 +28,11 @@ verticalLine.style.height = `${pic.height}px`;
 fetch('colours.json')
   .then(response => response.json())
   .then(data => {
-    colourList = data.colourList;
-    eLabList = data.elabList;
+    colourList = convertHexList(data.colourList);
+    eLabList = convertHexList(data.elabList);
     totalList = eLabList; // Default to ELAB list
+    // At this point totalList has the format { colourName: [ { hex: "#FFFFFF", rgb: { r: 255, g: 255, b: 255 } }, ... ], ... }
+
     // Now the global vars are populated and accessible
     console.log("Fetched colours!");
   })
@@ -45,6 +44,28 @@ fetch('colours.json')
 ////////////////////////////////////////
 // Colour-selecting tools
 ////////////////////////////////////////
+
+// Used to preconvert hex codes to RGB for the colour distance function
+function convertHexList(hexObj) { // Technically takes an object of lists
+  const processedList = {};
+
+  for (const [colour, hexCodes] of Object.entries(hexObj)) {
+    processedList[colour] = hexCodes.map(hex => {
+      const fullHex = hex.startsWith('#') ? hex : `#${hex}`;
+      const r = parseInt(fullHex.slice(1, 3), 16);
+      const g = parseInt(fullHex.slice(3, 5), 16);
+      const b = parseInt(fullHex.slice(5, 7), 16);
+
+      return {
+        hex: fullHex.toUpperCase(),
+        rgb: { r, g, b }
+      };
+    });
+  }
+
+  console.log(processedList)
+  return processedList;
+}
 
 
 // Takes a hex code string, returns three numbers
@@ -80,7 +101,7 @@ function closestcolour(totalList, sample) {
 
   for (const [name, hexList] of Object.entries(totalList)) {
     for (const hex of hexList) {
-      const colourRgb = hexToRgb(hex);
+      const colourRgb = hex.rgb;
       const distance = colourDistance(sampleRgb, colourRgb);
 
       if (distance < closestDistance) {
@@ -127,94 +148,80 @@ function magZoom() {
   magPixels.item((magPixels.length - 1) / 2).style.borderRadius = "2px";
 }
 
-magZoom(); // Call magSize as initial setup
+// Add magnifying glass slider functionality
+magSlider.oninput = function() {
+  if (this.value%2) { // If it's odd
+    magSize = this.value;
+  }
+  magZoom();
+}
 
-// On mouseover, captures the page as a canvas then uses getImageData to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
-// Add mousemove event listener to the image
+// Gets pixel data from list (rather than getImageData() being called every time)
+function getPixelFromFullData(x, y) {
+  x = Math.max(0, Math.min(canvas.width - 1, x));
+  y = Math.max(0, Math.min(canvas.height - 1, y));
+  const index = (y * canvas.width + x) * 4;
+  return [
+    fullData[index],     // R
+    fullData[index + 1], // G
+    fullData[index + 2], // B
+    fullData[index + 3], // A
+  ];
+}
+
+// On mouseover, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
 pic.addEventListener("mousemove", function(event) {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+  const rect = pic.getBoundingClientRect();
+  const x = event.clientX - Math.floor(rect.left);
+  const y = event.clientY - Math.floor(rect.top);
+  const px = Math.floor(x / zoom);
+  const py = Math.floor(y / zoom);
 
-    // Set canvas dimensions to the image dimensions
-    canvas.width = pic.width;
-    canvas.height = pic.height;
+  const pixelData = getPixelFromFullData(px, py);
+  const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+  const [colourHex, colourName] = closestcolour(totalList, hex);
 
-    // Draw the image onto the canvas
-    ctx.drawImage(pic, 0, 0, pic.width, pic.height);
+  document.getElementById("colour-name").textContent = `${colourHex.hex} - ${colourName}`;
+  document.getElementById("colour-hex").textContent = `${hex}`;
 
-    // Get the mouseover'ed pixel's colour
-    const rect = pic.getBoundingClientRect();
-    const x = event.clientX - Math.floor(rect.left);
-    const y = event.clientY - Math.floor(rect.top);
-    const pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
+  document.getElementById("red-amount").style.width = `${pixelData[0] * 100 / 255}%`;
+  document.getElementById("green-amount").style.width = `${pixelData[1] * 100 / 255}%`;
+  document.getElementById("blue-amount").style.width = `${pixelData[2] * 100 / 255}%`;
 
-    const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-    const [colourHex, colourName] = closestcolour(totalList, hex);
+  for (let i = 0; i < magPixels.length; i++) {
+    let magPixelX = Math.floor((x - (magSize - 1)/2 + i % magSize)/zoom) + (1 - zoom % 2);
+    let magPixelY = Math.floor((y - (magSize - 1)/2 + Math.floor(i / magSize))/zoom) + (1 - zoom % 2);
 
-    // Update the paragraphs with the closest colour name and hex code
-    document.getElementById("colour-name").textContent = `${colourHex} - ${colourName}`;
-    document.getElementById("colour-hex").textContent = `${hex}`;
 
-    // Update the progress bars with the RGB values
-    document.getElementById("red-amount").style.width = `${pixelData[0]*100/255}%`;
-    document.getElementById("green-amount").style.width = `${pixelData[1]*100/255}%`;
-    document.getElementById("blue-amount").style.width = `${pixelData[2]*100/255}%`;
 
-    // Get magnifying glass pixel colours
-    for (var i=0;i<magPixels.length;i++) {
-      // These formulae are hideous and need fixing - a mess of edge cases atm
-      var magPixelX = Math.floor((x  - (magSize - 1)/2 + i%magSize)/zoom) + (1-zoom%2);
-      var magPixelY = Math.floor((y  - (magSize - 1)/2 + Math.floor(i/magSize))/zoom) + (1-zoom%2);
+    const magData = getPixelFromFullData(magPixelX, magPixelY);
+    const magColour = rgbToHex(magData[0], magData[1], magData[2]);
+    magPixels.item(i).style.backgroundColor = "#" + magColour;
+  }
 
-      if (i%magSize < (magSize - 1)/2) {
-        magPixelY += (1/zoom)/2;
-      }
-
-      var magcolourComponents = ctx.getImageData(magPixelX, magPixelY, 1, 1).data; // Gets x/y coords based on i
-      var magcolour = rgbToHex(magcolourComponents[0],magcolourComponents[1],magcolourComponents[2]);
-      magPixels.item(i).style.backgroundColor = "#" + magcolour;
-    }
+  horizontalLine.style.top = `${y}px`;
+  verticalLine.style.left = `${x}px`;
+  pixelXY.textContent = `${x * inv_zoom} right, ${y * inv_zoom} down`;
 });
 
-// Handles crosshairs moving over image
-pic.addEventListener('mousemove', function(event) {
-  const rect = document.getElementById('img-box').getBoundingClientRect();
-  const x = event.offsetX;
-  const y = event.offsetY;
-
-  horizontalLine.style.top = `${y*zoom}px`;
-  verticalLine.style.left = `${x*zoom}px`;
-
-  pixelXY.textContent = `${x*inv_zoom} right, ${y*inv_zoom} down`;
-});
 
 // Handles selecting pixels in the image
-
 pic.addEventListener('click', function(event) {
-  const img = event.target;
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  // Set canvas dimensions to the image dimensions
-  canvas.width = img.width;
-  canvas.height = img.height;
-
-  // Draw the image onto the canvas
-  ctx.drawImage(img, 0, 0, img.width, img.height);
-
-  // Get the clicked pixel's colour
   const rect = pic.getBoundingClientRect();
   const x = event.clientX - Math.floor(rect.left);
   const y = event.clientY - Math.floor(rect.top);
   const pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
 
-  // Update the pixel-list with the pixel details
   const pixelList = document.getElementById('pixel-list');
   const pixel = document.createElement('li');
-  const pixel_xy = document.getElementById('pixel-xy').textContent.split(' '); // Array
-  pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${rgbToHex(pixelData[0], pixelData[1], pixelData[2])} (${closestcolour(totalList, rgbToHex(pixelData[0], pixelData[1], pixelData[2]))[1]})`));
+  const pixel_xy = document.getElementById('pixel-xy').textContent.split(' ');
+  const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+  const name = closestcolour(totalList, hex)[1];
+
+  pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${hex} (${name})`));
   pixelList.appendChild(pixel);
 });
+
 
 ////////////////////////////////////////
 // Pixel info buttons
@@ -229,8 +236,8 @@ document.getElementById('clear-button').addEventListener('click', function() {
 document.getElementById('copy-button').addEventListener('click', function() {
   navigator.clipboard.writeText(pixelListToString(document.getElementById('pixel-list')));
   // Make the list go grey briefly to indicate it's been copied
-  document.getElementById('pixel-list').style.backgroundcolor = '#f0f0f0';
-  setTimeout(() => {{document.getElementById('pixel-list').style.backgroundcolor = 'white';}}, 250);
+  document.getElementById('pixel-list').style.backgroundColor = '#f0f0f0';
+  setTimeout(() => {{document.getElementById('pixel-list').style.backgroundColor = 'white';}}, 250);
 });
 
 // Handles saving the pixel list to a CSV
@@ -284,9 +291,11 @@ document.getElementById('image-upload').addEventListener('change', function(even
   if (file) {
     const reader = new FileReader();
     reader.onload = function(e) {
-    pic.src = e.target.result;
-    original_pic.src = e.target.result; // Set the backup image to the uploaded one
-    refreshImage();
+      pic.src = e.target.result;
+      console.log(pic.width);
+      original_pic.src = e.target.result; // Set the backup image to the uploaded one
+      refreshImage();
+      updateImageData(); // Update the image data
     };
     reader.readAsDataURL(file);
   }
@@ -320,6 +329,7 @@ cameraButton.addEventListener('click', async () => {
         pic.src = canvas.toDataURL('image/png');
         original_pic.src = canvas.toDataURL('image/png'); // Set the backup image to the captured one
         refreshImage();
+        updateImageData(); // Update the image data with new image
 
         // Stop the video stream and hide the preview - doesn't seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
@@ -338,14 +348,6 @@ video.style.display = 'none'; // Show video preview
 closeButton.style.display = 'none'; // Show close button
 cameraButton.textContent = 'Take Photo';
 });
-
-// Add magnifying glass slider functionality
-magSlider.oninput = function() {
-  if (this.value%2) { // If it's odd
-    magSize = this.value;
-  }
-  magZoom();
-}
 
 // ELAB checkbox toggle
 const elabCheck = document.getElementById('elab-mode');
@@ -442,6 +444,15 @@ function downsampleImage(outElement, inElement, zoomout) {
 }
 
 ////////////////////////////////////////
+// Image/canvas setup
+////////////////////////////////////////
+
+function updateImageData() {
+  fullImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  fullData = fullImageData.data;
+}
+
+////////////////////////////////////////
 // Debug logic
 ////////////////////////////////////////
 
@@ -513,7 +524,16 @@ function init() {
   // Check ELAB mode by default (and call change function)
   elabCheck.checked = true;
   elabChanger();
+  magZoom();
 
   // Make sure the correct zoom radio button is checked
   document.getElementById('zoom-1').click();
+};
+
+// Called when picture is first loaded
+pic.onload = function () {
+  canvas.width = pic.width;
+  canvas.height = pic.height;
+  ctx.drawImage(pic, 0, 0, pic.width, pic.height);
+  updateImageData(); // Initialise the data
 };
