@@ -12,7 +12,7 @@ let inv_zoom = 1; // Zoom used for zooming out - relevant in some ways but not o
 let relativeX = 0;
 let relativeY = 0;
 
-let debug = false; // Debug mode - only works on localhost or if the debug sequence is entered
+let debugMode = false; // Debug mode - only works on localhost or if the debug sequence is entered
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
