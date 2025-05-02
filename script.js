@@ -461,12 +461,12 @@ function debug(onOff) {
 
   if (onOff) {
     console.log("Debug mode on!");
-    rule.style.removeProperty('display'); // Empties the debug class, revealing elements
+    debugClass.style.removeProperty('display'); // Empties the debug class, revealing elements
     
   }
   else {
     console.log("Debug mode off!");
-    rule.style.display = 'none'; // Hides all elements with the debug class
+    debugClass.style.display = 'none'; // Hides all elements with the debug class
   }
 }
 
