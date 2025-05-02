@@ -34,7 +34,6 @@ fetch('colours.json')
     totalList = eLabList; // Default to ELAB list
     // Now the global vars are populated and accessible
     console.log("Fetched colours!");
-    console.log(eLabList);
   })
   .catch(error => console.error('Error loading JSON:', error));
 
@@ -434,12 +433,63 @@ function downsampleImage(outElement, inElement, zoomout) {
   outElement.src = outputCanvas.toDataURL();
 }
 
+////////////////////////////////////////
+// Debug logic
+////////////////////////////////////////
+
 // Debug mode - should only trigger on localhost
-if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-  console.log("Debug mode activated!");
-  document.getElementById('zoom-options').style.display = 'flex';
+if (!(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) { // Real
+  console.log("Removing debug features");
+  debug(false); // Turn off debug mode
 }
 
+function debug(onOff) {
+  
+  // Find the stylesheet (in this case the first/only one)
+  const sheet = document.styleSheets[0];
+
+  let debugClass; // Will become the debug CSS class
+
+  // Loop through the CSS rules to find the target class
+  for (let rule of sheet.cssRules) {
+    if (rule.selectorText === '.debug') {
+      debugClass  = rule; // Save the debug class
+      break;
+    }
+  }
+
+  if (onOff) {
+    console.log("Debug mode on!");
+    rule.style.removeProperty('display'); // Empties the debug class, revealing elements
+    
+  }
+  else {
+    console.log("Debug mode off!");
+    rule.style.display = 'none'; // Hides all elements with the debug class
+  }
+}
+
+// Listens for keyboard input to detect debug mode activation
+
+let inputSequence = [];
+const debugSequence = ['d', 'e', 'b', 'u', 'g']; // The sequence to trigger debug mode
+
+document.addEventListener('keydown', function(event) {
+    inputSequence.push(event.key);
+
+    if (inputSequence.length > debugSequence.length) {
+        inputSequence.shift(); // Remove the oldest input if it exceeds the target length
+    }
+
+    if (inputSequence.join('') === debugSequence.join('')) {
+        console.log('Sequence matched!');
+        inputSequence = []; // Reset sequence after match
+    }
+});
+
+////////////////////////////////////////
+// Initisalisation
+////////////////////////////////////////
 
 // Function to call on page load
 function init() {

@@ -211,3 +211,8 @@ input[name="zoom"] {
 #camera-close-button {
     display: none;
 }
+
+/* Debug class - changed programatically to "display: none" on page load */
+.debug {
+
+}
