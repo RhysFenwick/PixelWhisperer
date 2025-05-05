@@ -21,6 +21,14 @@
             <p id="explainer">
                 Mouse over the image below to see hex code and closest colour name of the pixel you've landed on.
             </p>
+            <div id="image-options" class="image-options debug">
+
+                <p id="brightness-header">Brightness:</p>
+                <label for="brightness">Low</label>
+                <input type="range" min="1" max="100" value="50" class="slider" id="brightness" title="Brightness" step="1">
+                <label for="brightness">High</label>
+                <input type="button" id="brightness-reset" title="Reset brightness" value="Reset">
+            </div>
             <fieldset id="zoom-options" class="zoom-options debug">
 
                 <p id="zoom-header">Zoom:</p>

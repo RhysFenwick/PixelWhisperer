@@ -7,6 +7,7 @@ let zoom = 1, inv_zoom = 1;
 let relativeX = 0, relativeY = 0;
 let debugMode = false;  
 let fullImageData, fullData; // Will hold the full image data to prevent many calls to getImageData
+let brightness = 50; // Default brightness (no change)
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -16,6 +17,8 @@ const original_pic = document.getElementById('original-image'); // Backup image 
 const frame = document.getElementById('picture-frame');
 horizontalLine.style.width = `${pic.width}px`;
 verticalLine.style.height = `${pic.height}px`;
+const brightness_slider = document.getElementById('brightness');
+const brightness_reset = document.getElementById('brightness-reset');
 
 // Set up canvas; blank until picture load
 const canvas = document.createElement("canvas");
@@ -80,6 +83,13 @@ function hexToRgb(hex) {
 
 // Takes three numbers and returns a hex code string
 function rgbToHex(r, g, b) {
+  const brightnessFactor = brightness / 50; // Convert brightness to a factor between 0 and 2
+  // Controls for brightness
+  r = Math.min(255, Math.floor(r * brightnessFactor));
+  g = Math.min(255, Math.floor(g * brightnessFactor));
+  b = Math.min(255, Math.floor(b * brightnessFactor));
+
+  // Returns a hex code string in the format RRGGBB
     return ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
 }
 
@@ -119,6 +129,25 @@ function closestcolour(totalList, sample) {
 ////////////////////////////////////////
 // Webpage interactivity
 ////////////////////////////////////////
+
+// Set up brightness slider
+brightness_slider.oninput = function() { 
+  brightness = this.value;
+  changeBrightness(); // Call the function to change brightness
+}
+
+// Set up brightness reset button
+brightness_reset.addEventListener('click', function() {
+  brightness_slider.value = 50; // Reset slider to 50
+  brightness = 50; // Reset brightness variable
+  changeBrightness(); // Call the function to change brightness
+})
+
+// Function to change brightness of the image
+function changeBrightness() {
+  // Brightness will be 1-100, default to 50; need to map 1-50-100 to 0-1-[some high number]
+  pic.style.filter = `brightness(${brightness*2}%)`;
+}
 
 // Set up magnifying glass & slider
 const magGlass = document.getElementById("mag-glass");
@@ -526,6 +555,9 @@ function init() {
   // Check ELAB mode by default (and call change function)
   elabCheck.checked = true;
   elabChanger();
+  // Do the same for brightness
+  brightness_slider.value = 50;
+  changeBrightness();
   magZoom();
 
   // Make sure the correct zoom radio button is checked

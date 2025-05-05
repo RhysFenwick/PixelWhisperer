@@ -15,6 +15,9 @@ This software is published under the [MIT License](https://opensource.org/licens
 - Add credits
 - Make scrollbars fall outside image if possible
 - Fix offset zoomed-in pixel coords
+- Intensity measurement? (possibly HSV rather than RGB, or alpha channel)
+- Saturation slider?
+- Add live feed function
 
 
 
