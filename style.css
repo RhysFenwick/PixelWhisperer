@@ -112,7 +112,7 @@ footer {
     transform-origin: top left;
 }
 
-#image-options{
+.image-options{
     display: flex;
     justify-content: center;
     border: 0;
