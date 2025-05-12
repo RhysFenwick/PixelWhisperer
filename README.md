@@ -19,6 +19,10 @@ This software is published under the [MIT License](https://opensource.org/licens
 - Saturation slider?
 - Add live feed function
 
+## Broader Accessibility
+- Keyboard controls (maybe have keyboard input reset to top left?)
+- Bulk file analysis
+- Throw it into e.g. Bootstrap to allow resizing
 
 
 

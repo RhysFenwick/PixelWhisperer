@@ -8,6 +8,7 @@ let relativeX = 0, relativeY = 0;
 let debugMode = false;  
 let fullImageData, fullData; // Will hold the full image data to prevent many calls to getImageData
 let brightness = 50; // Default brightness (no change)
+let contrast = 50; // Default contrast (no change)
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -19,6 +20,8 @@ horizontalLine.style.width = `${pic.width}px`;
 verticalLine.style.height = `${pic.height}px`;
 const brightness_slider = document.getElementById('brightness');
 const brightness_reset = document.getElementById('brightness-reset');
+const contrast_slider = document.getElementById('contrast');
+const contrast_reset = document.getElementById('contrast-reset');
 
 // Set up canvas; blank until picture load
 const canvas = document.createElement("canvas");
@@ -84,10 +87,16 @@ function hexToRgb(hex) {
 // Takes three numbers and returns a hex code string
 function rgbToHex(r, g, b) {
   const brightnessFactor = brightness / 50; // Convert brightness to a factor between 0 and 2
+  const contrastFactor = contrast / 50; // Convert contrast to a factor between 0 and 2
   // Controls for brightness
   r = Math.min(255, Math.floor(r * brightnessFactor));
   g = Math.min(255, Math.floor(g * brightnessFactor));
   b = Math.min(255, Math.floor(b * brightnessFactor));
+
+  // ...Then contrast
+  r = Math.min(255, Math.max(0, Math.floor((r - 128) * contrastFactor + 128)));
+  g = Math.min(255, Math.max(0, Math.floor((g - 128) * contrastFactor + 128)));
+  b = Math.min(255, Math.max(0, Math.floor((b - 128) * contrastFactor + 128)));
 
   // Returns a hex code string in the format RRGGBB
     return ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
@@ -146,7 +155,28 @@ brightness_reset.addEventListener('click', function() {
 // Function to change brightness of the image
 function changeBrightness() {
   // Brightness will be 1-100, default to 50; need to map 1-50-100 to 0-1-[some high number]
-  pic.style.filter = `brightness(${brightness*2}%)`;
+  pic.style.filter = `brightness(${brightness*2}%) contrast(${contrast*2}%)`;
+}
+
+// And do the same for contrast
+
+// Set up contrast slider
+contrast_slider.oninput = function() { 
+  contrast = this.value;
+  changeContrast(); // Call the function to change contrast
+}
+
+// Set up contrast reset button
+contrast_reset.addEventListener('click', function() {
+  contrast_slider.value = 50; // Reset slider to 50
+  contrast = 50; // Reset contrast variable
+  changeContrast(); // Call the function to change contrast
+})
+
+// Function to change contrast of the image
+function changeContrast() {
+  // Contrast will be 1-100, default to 50; need to map 1-50-100 to 0-1-[some high number]
+  pic.style.filter = `brightness(${brightness*2}%) contrast(${contrast*2}%)`;
 }
 
 // Set up magnifying glass & slider
@@ -558,6 +588,10 @@ function init() {
   // Do the same for brightness
   brightness_slider.value = 50;
   changeBrightness();
+  // ...And contrast
+  contrast_slider.value = 50;
+  changeContrast();
+
   magZoom();
 
   // Make sure the correct zoom radio button is checked
