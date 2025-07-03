@@ -9,6 +9,7 @@ let debugMode = false;
 let fullImageData, fullData; // Will hold the full image data to prevent many calls to getImageData
 let brightness = 50; // Default brightness (no change)
 let contrast = 50; // Default contrast (no change)
+let lastMouseX = 0, lastMouseY = 0; // Last known mouse coords (for when scrolling the image without using a mouse)
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -228,13 +229,10 @@ function getPixelFromFullData(x, y) {
   ];
 }
 
-// On mouseover, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
-pic.addEventListener("mousemove", function(event) {
-  const rect = pic.getBoundingClientRect();
-  const x = event.clientX - Math.floor(rect.left);
-  const y = event.clientY - Math.floor(rect.top);
-  const px = Math.floor(x / zoom);
-  const py = Math.floor(y / zoom);
+// Triggered on mouse move or arrow keys
+function updateFocus() {
+  const px = Math.floor(lastMouseX / zoom);
+  const py = Math.floor(lastMouseY / zoom);
 
   const pixelData = getPixelFromFullData(px, py);
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
@@ -252,17 +250,25 @@ pic.addEventListener("mousemove", function(event) {
     const magRow = Math.floor(i / magSize) -1; // Row number in the magnifying glass
     const magCol = i % magSize -1; // Column number in the magnifying glass
 
-    let magPixelX = Math.floor((x - (magSize - 1)/2 + magCol)/zoom);
-    let magPixelY = Math.floor((y - (magSize - 1)/2 + magRow)/zoom);
+    let magPixelX = Math.floor((lastMouseX - (magSize - 1)/2 + magCol)/zoom);
+    let magPixelY = Math.floor((lastMouseY - (magSize - 1)/2 + magRow)/zoom);
 
     const magData = getPixelFromFullData(magPixelX, magPixelY);
     const magColour = rgbToHex(magData[0], magData[1], magData[2]);
     magPixels.item(i).style.backgroundColor = "#" + magColour;
   }
 
-  horizontalLine.style.top = `${y}px`;
-  verticalLine.style.left = `${x}px`;
-  pixelXY.textContent = `${Math.ceil(x * inv_zoom / zoom)} right, ${Math.ceil(y * inv_zoom / zoom)} down`;
+  horizontalLine.style.top = `${lastMouseY}px`;
+  verticalLine.style.left = `${lastMouseX}px`;
+  pixelXY.textContent = `${Math.ceil(lastMouseX * inv_zoom / zoom)} right, ${Math.ceil(lastMouseY * inv_zoom / zoom)} down`;
+}
+
+// On mouseover, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
+pic.addEventListener("mousemove", function(event) {
+  const rect = pic.getBoundingClientRect();
+  lastMouseX = event.clientX - Math.floor(rect.left);
+  lastMouseY = event.clientY - Math.floor(rect.top);
+  updateFocus();
 });
 
 
@@ -544,7 +550,7 @@ function debug(onOff) {
   }
 }
 
-// Listens for keyboard input to detect debug mode activation
+// Listens for keyboard input to detect debug mode activation and move image
 
 let inputSequence = [];
 const debugSequence = ['d', 'e', 'b', 'u', 'g']; // The sequence to trigger debug mode
@@ -552,7 +558,31 @@ const hideDebugSequence = ['r', 'e', 's', 'e','t']; // The sequence to hide debu
 
 document.addEventListener('keydown', function(event) {
     inputSequence.push(event.key);
-    console.log(event.key); // Log the key pressed
+
+    // First, check for image movement
+    const step = 1;
+    switch (event.key) {
+      case 'ArrowUp':
+        frame.parentElement.scrollTop -= step;
+        lastMouseY -= step;
+        updateFocus();
+        break;
+      case 'ArrowDown':
+        frame.parentElement.scrollTop += step;
+        lastMouseY += step;
+        updateFocus();
+        break;
+      case 'ArrowLeft':
+        frame.parentElement.scrollLeft -= step;
+        lastMouseX -= step;
+        updateFocus();
+        break;
+      case 'ArrowRight':
+        frame.parentElement.scrollLeft += step;
+        lastMouseX += step;
+        updateFocus();
+        break;
+    }
 
     if (inputSequence.length > debugSequence.length) {
         inputSequence.shift(); // Remove the oldest input if it exceeds the target length
@@ -596,6 +626,12 @@ function init() {
 
   // Make sure the correct zoom radio button is checked
   document.getElementById('zoom-1').click();
+
+  // Should be called on picture load; duplicating here to make sure it happens the first time as well
+  canvas.width = pic.width;
+  canvas.height = pic.height;
+  ctx.drawImage(pic, 0, 0, pic.width, pic.height);
+  updateImageData(); // Initialise the data
 };
 
 // Called when picture is first loaded
