@@ -10,11 +10,11 @@ This software is published under the [MIT License](https://opensource.org/licens
 
 [Color Name & Hue by Daniel Flueck](https://www.color-blindness.com/color-name-hue/)
 
+A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Coventry for their assistance and support.
+
 ## TODO
 - Make crosshairs fall on pixel, not between them
-- Add credits
 - Make scrollbars fall outside image if possible
-- Fix offset zoomed-in pixel coords
 - Intensity measurement? (possibly HSV rather than RGB, or alpha channel)
 - Saturation slider?
 - Add live feed function
