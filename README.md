@@ -16,7 +16,6 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 - Make crosshairs fall on pixel, not between them
 - Make scrollbars fall outside image if possible
 - Intensity measurement? (possibly HSV rather than RGB, or alpha channel)
-- Saturation slider?
 - Add live feed function
 
 ## Broader Accessibility
@@ -24,5 +23,10 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 - Bulk file analysis
 - Throw it into e.g. Bootstrap to allow resizing
 
+## Fixes needed
+- Pixel off-by-one
+- Scrolling not moving the big image
+- General button padding reduction/spacing
+- Redo ANU branding
 
 

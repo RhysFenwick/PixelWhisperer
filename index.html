@@ -1,161 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Pixel Whisperer</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
-  </head>
-  <body onload="init()">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pixel Whisperer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/x-icon" href="img/favicon.ico" />
+</head>
+<body onload="init()">
+  <div class="container-fluid">
+    <h1 id="page-heading" class="text-center">Pixel Whisperer - Turn picture colours into words.</h1>
 
-    <h1 id="page-heading">
-        Pixel Whisperer - Turn picture colours into words.
-    </h1>
+    <div class="row g-3">
 
-    <div id="page-contents">
+      <!-- Left: Image area -->
+      <div class="col-12 col-lg-6">
+        <div class="border rounded p-2 border-3">
+          <p class="text-center">
+            Mouse over the image below to see hex code and closest colour name.
+          </p>
 
-        <div id="focus-image" class="box">
-
-            <p id="explainer">
-                Mouse over the image below to see hex code and closest colour name of the pixel you've landed on.
-            </p>
-            <div id="image-options" class="image-options debug">
-
-                <p id="brightness-header">Brightness:</p>
-                <label for="brightness">Low</label>
-                <input type="range" min="1" max="100" value="50" class="slider" id="brightness" title="Brightness" step="1">
-                <label for="brightness">High</label>
-                <input type="button" id="brightness-reset" title="Reset brightness" value="Reset">
-
-                <p id="contrast-header">Contrast:</p>
-                <label for="contrast">Low</label>
-                <input type="range" min="1" max="100" value="50" class="slider" id="contrast" title="Contrast" step="1">
-                <label for="contrast">High</label>
-                <input type="button" id="contrast-reset" title="Reset contrast" value="Reset">
+          <!-- Image Box -->
+          <div id="img-box" class="position-relative border">
+            <div id="image-fence" class="overflow-auto">
+              <div id="picture-frame" class="overflow-auto">
+                <img id="picker-image" class="img-fluid" src="img/Ducklings right.jpg" />
+                <img id="original-image" class="img-fluid" src="img/Ducklings right.jpg" style="display:none;" />
+              </div>
+              <div id="horizontal-line" class="crosshair-line"></div>
+              <div id="vertical-line" class="crosshair-line"></div>
             </div>
-            <fieldset id="zoom-options" class="zoom-options debug">
+          </div>
 
-                <p id="zoom-header">Zoom:</p>
+          <!-- Brightness Controls -->
+          <div class="mb-3 debug">
+            <label class="form-label">Brightness</label>
+            <input type="range" min="1" max="100" value="50" class="form-range" id="brightness">
+            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="brightness-reset">Reset</button>
+          </div>
 
-                <label class="zoom-labels" for="zoom-inv4">x1/4</label>
-                <input type="radio" id="zoom-inv4" value="0.25" name="zoom" checked/>
+          <!-- Contrast Controls -->
+          <div class="mb-3 debug">
+            <label class="form-label">Contrast</label>
+            <input type="range" min="1" max="100" value="50" class="form-range" id="contrast">
+            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="contrast-reset">Reset</button>
+          </div>
 
-                <label class="zoom-labels" for="zoom-inv2">x1/2</label>
-                <input type="radio" id="zoom-inv2" value="0.5" name="zoom" checked/>
-
-                <label class="zoom-labels" for="zoom-1">x1</label>
-                <input type="radio" id="zoom-1" value="1" name="zoom" checked/>
-
-                <label class="zoom-labels" for="zoom-2"> x2</label>
-                <input type="radio" id="zoom-2" value="2" name="zoom"/>
-
-                <label class="zoom-labels" for="zoom-5"> x5</label>
-                <input type="radio" id="zoom-5" value="5" name="zoom"/>
-
-                <label class="zoom-labels" for="zoom-10"> x10</label>
-                <input type="radio" id="zoom-10" value="10" name="zoom"/>
-            </fieldset>
-            
-
-
-            <div id="img-box">
-                <!-- Image being sampled - default is ducklings -->
-                <div id="picture-frame">
-                    <img id="picker-image" src="img/Ducklings right.jpg">
-                    <img id="original-image" src="img/Ducklings right.jpg" style="display:none;">
-                </div>
-                
-                <div id="horizontal-line" class="crosshair-line"></div>
-                <div id="vertical-line" class="crosshair-line"></div>
+          <!-- Zoom Controls -->
+          <fieldset class="mb-3 debug">
+            <legend class="form-label mb-1">Zoom</legend>
+            <div class="d-flex flex-wrap gap-2">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="zoom" id="zoom-inv4" value="0.25" checked>
+                <label class="form-check-label" for="zoom-inv4">x1/4</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="zoom" id="zoom-inv2" value="0.5">
+                <label class="form-check-label" for="zoom-inv2">x1/2</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="zoom" id="zoom-1" value="1">
+                <label class="form-check-label" for="zoom-1">x1</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="zoom" id="zoom-2" value="2">
+                <label class="form-check-label" for="zoom-2">x2</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="zoom" id="zoom-5" value="5">
+                <label class="form-check-label" for="zoom-5">x5</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="zoom" id="zoom-10" value="10">
+                <label class="form-check-label" for="zoom-10">x10</label>
+              </div>
             </div>
+          </fieldset>
+
+        </div>
+      </div>
+
+      <!-- Middle: Colour Info -->
+      <div class="col-8 col-md-4 col-lg-2">
+        <div class="border rounded p-2 border-3">
+          <h3 class="text-center">Colour Info</h3>
+          <h4>Closest colour name</h4>
+          <p id="colour-name">&nbsp;</p>
+          <h4>Hex code</h4>
+          <p id="colour-hex">&nbsp;</p>
+          <h4>RGB values</h4>
+          <div class="rgb-bar mb-1">
+            <div id="red-amount" class="rgb-amount" style="background-color:red;"></div>
+          </div>
+          <div class="rgb-bar mb-1">
+            <div id="green-amount" class="rgb-amount" style="background-color:green;"></div>
+          </div>
+          <div class="rgb-bar mb-1">
+            <div id="blue-amount" class="rgb-amount" style="background-color:blue;"></div>
+          </div>
+          <h4>Magnifying glass</h4>
+          <div id="mag-glass" class="border"></div>
+          <input type="range" min="1" max="15" value="11" class="form-range my-2" id="mag-res">
+          <p id="pixel-xy">0 right, 0 down</p>
+        </div>
+      </div>
+
+      <!-- Right: Selected Pixels -->
+      <div class="col-8 col-md-4 col-lg-2">
+        <div class="border rounded p-2 border-3">
+          <h3 class="text-center">Selected Pixels</h3>
+          <ol id="pixel-list" class="overflow-auto" style="max-height:60vh;"></ol>
+          <div class="d-flex gap-2 mt-2">
+            <button id="copy-button" class="btn btn-primary btn-sm">Copy</button>
+            <button id="export-button" class="btn btn-secondary btn-sm">Export</button>
+            <button id="clear-button" class="btn btn-danger btn-sm">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="col-4 col-lg-1">
+        <div class="border rounded p-2 border-3">
+          <h3 class="text-center">Add Your Own Image</h3>
+          <input type="file" id="image-upload-button" accept="image/*" class="form-control mb-2" />
+          <button id="camera-button" class="btn btn-outline-primary btn-sm mb-1">Take Photo</button>
+          <button id="camera-close-button" class="btn btn-outline-secondary btn-sm mb-1">Close Camera</button>
+          <video id="camera-preview" class="w-100" autoplay></video>
+        </div>
+      </div>
 
     </div>
+  </div>
 
-        <div id="info" class="box">
-            
-            <h3>Colour Info</h3>
-
-            <div id="text-info">
-
-                <h4>Closest colour name</h4>
-                <p id="colour-name">
-                    &nbsp;
-                </p>
-    
-                <h4>Hex code (RRGGBB)</h4>
-                <p id="colour-hex">
-                    &nbsp;    
-                </p>
-
-            </div>
-
-            <div id="colour-info">
-
-                <h4>RGB values</h4>
-
-                <div id="red-bar" class="rgb-bar">
-                    <div id="red-amount" class="rgb-amount" style="background-color: red;"></div>
-                </div>
-                <div id="green-bar" class="rgb-bar">
-                    <div id="green-amount" class="rgb-amount" style="background-color: green;"></div>
-                </div>
-                <div id="blue-bar" class="rgb-bar">
-                    <div id="blue-amount" class="rgb-amount" style="background-color: blue;"></div>
-                </div>
-
-                <h4>Magnifying glass</h4>
-
-                <div id="mag-glass">
-                </div>
-
-                <input type="range" min="1" max="15" value="11" class="slider" id="mag-res">
-                <p id="pixel-xy">0 right, 0 down</p>
-            </div>
-
-        </div>
-
-        <div id="pixel-stats" class="box">
-
-            <h3>Selected pixels</h3>
-
-            <!-- List of pixels clicked on-->
-            <ol id="pixel-list">
-            </ol>
-
-            <div id="data-buttons">
-                <button id="copy-button">Copy</button>
-                <button id="export-button">Export</button>
-                <button id="clear-button">Clear</button>
-            </div>
-
-        </div>
-
-        <div id="image-upload" class="box">
-
-            <h3>Add your own image</h3>
-
-            <!-- File input for uploading a new image -->
-            <input type="file" id="image-upload-button" accept="image/*">
-
-            <!-- Button to activate the camera and take a photo -->
-            <button id="camera-button">Take Photo</button>
-
-            <!-- Button to close the camera -->
-            <button id="camera-close-button">Close Camera</button>
-
-            <!-- Hidden video element for previewing the camera feed -->
-            <video id="camera-preview" autoplay></video>
-
-        </div>
-    </div>
-
-  <footer>
-    <p>Copyright <script>document.write( new Date().getFullYear() );</script> Rhys Fenwick. Created at <a href="https://anu.edu.au">ANU</a>; code available at <a href="https://github.com/RhysFenwick/PixelWhisperer">GitHub</a> under <a href="https://opensource.org/license/mit">MIT Licence</a>. <input type="checkbox" id="elab-mode" name="elab-mode" class="debug"><label class="tooltip debug" for="elab-mode" title="ELAB mode shifts the colour names to more accurately reflect pictures taken under blue-tinged fluorescent lighting.">ELab Mode</label>
+  <footer class="text-center small py-2">
+    <p>
+      Copyright <script>document.write(new Date().getFullYear());</script> Rhys Fenwick.
+      Created at <a href="https://anu.edu.au">ANU</a>.
+      Code at <a href="https://github.com/RhysFenwick/PixelWhisperer">GitHub</a> under
+      <a href="https://opensource.org/license/mit">MIT Licence</a>.
+      <input type="checkbox" id="elab-mode" class="form-check-input">
+      <label for="elab-mode" class="form-check-label">ELab Mode</label>
     </p>
   </footer>
 
-  </body>
-  <script type="text/javascript" src="script.js"></script>
+  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

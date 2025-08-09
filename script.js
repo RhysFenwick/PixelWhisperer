@@ -10,6 +10,7 @@ let fullImageData, fullData; // Will hold the full image data to prevent many ca
 let brightness = 50; // Default brightness (no change)
 let contrast = 50; // Default contrast (no change)
 let lastMouseX = 0, lastMouseY = 0; // Last known mouse coords (for when scrolling the image without using a mouse)
+let lastCrosshairX = 0, lastCrosshairY = 0; // Similar to lastMouseX/Y but for the crosshair (i.e. relative to viewport not image)
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -17,8 +18,9 @@ const pixelXY = document.getElementById('pixel-xy');
 const pic = document.getElementById('picker-image');
 const original_pic = document.getElementById('original-image'); // Backup image for zooming out
 const frame = document.getElementById('picture-frame');
-horizontalLine.style.width = `${pic.width}px`;
-verticalLine.style.height = `${pic.height}px`;
+const fence = document.getElementById('image-fence');
+horizontalLine.style.width = `${fence.width}px`;
+verticalLine.style.height = `${fence.height}px`;
 const brightness_slider = document.getElementById('brightness');
 const brightness_reset = document.getElementById('brightness-reset');
 const contrast_slider = document.getElementById('contrast');
@@ -231,6 +233,38 @@ function getPixelFromFullData(x, y) {
 
 // Triggered on mouse move or arrow keys
 function updateFocus() {
+  console.log(pic.offsetWidth);
+
+  // Make sure variables are clamped as needed
+  // Very messy but so be it
+  if (lastMouseX < 0) {
+    lastMouseX = 0;
+  }
+  else if (lastCrosshairX > fence.offsetWidth) {
+    lastCrosshairX = fence.offsetWidth;
+  }
+
+  if (lastCrosshairY < 0) {
+    lastCrosshairY = 0;
+  }
+  else if (lastCrosshairY > fence.offsetHeight) {
+    lastCrosshairY = fence.offsetHeight;
+  }
+
+  if (lastMouseX < 0) {
+    lastMouseX = 0;
+  }
+  else if (lastMouseX > pic.offsetWidth * zoom) {
+    lastMouseX = pic.offsetWidth * zoom;
+  }
+
+  if (lastMouseY < 0) {
+    lastMouseY = 0;
+  }
+  else if (lastMouseY > pic.offsetHeight * zoom) {
+    lastMouseY = pic.offsetHeight * zoom;
+  }
+
   const px = Math.floor(lastMouseX / zoom);
   const py = Math.floor(lastMouseY / zoom);
 
@@ -258,16 +292,19 @@ function updateFocus() {
     magPixels.item(i).style.backgroundColor = "#" + magColour;
   }
 
-  horizontalLine.style.top = `${lastMouseY}px`;
-  verticalLine.style.left = `${lastMouseX}px`;
+  horizontalLine.style.top = `${lastCrosshairY}px`;
+  verticalLine.style.left = `${lastCrosshairX}px`;
   pixelXY.textContent = `${Math.ceil(lastMouseX * inv_zoom / zoom)} right, ${Math.ceil(lastMouseY * inv_zoom / zoom)} down`;
 }
 
 // On mouseover, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
 pic.addEventListener("mousemove", function(event) {
   const rect = pic.getBoundingClientRect();
+  const fence_rect = fence.getBoundingClientRect();
   lastMouseX = event.clientX - Math.floor(rect.left);
   lastMouseY = event.clientY - Math.floor(rect.top);
+  lastCrosshairX = event.clientX - Math.floor(fence_rect.left);
+  lastCrosshairY = event.clientY - Math.floor(fence_rect.top);
   updateFocus();
 });
 
@@ -345,15 +382,15 @@ function pixelListToString(pixelList) {
 // New image buttons
 ////////////////////////////////////////
 
-// General refresh function
-function refreshImage() {
+// General crosshair refresh function
+function refreshCrosshairs() {
   // Lengthen the crosshairs but keep them narrow
-  horizontalLine.style.width = `${pic.width*zoom}px`;
-  verticalLine.style.height = `${pic.height*zoom}px`;
+  horizontalLine.style.width = `${Math.min(pic.offsetWidth, fence.offsetWidth)}px`;
+  verticalLine.style.height = `${Math.min(pic.offsetHeight, fence.offsetHeight)}px`;
 }
 
 // Handle image upload
-document.getElementById('image-upload').addEventListener('change', function(event) {
+document.getElementById('image-upload-button').addEventListener('change', function(event) {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
@@ -361,8 +398,8 @@ document.getElementById('image-upload').addEventListener('change', function(even
       pic.src = e.target.result;
       console.log(pic.width);
       original_pic.src = e.target.result; // Set the backup image to the uploaded one
-      refreshImage();
       updateImageData(); // Update the image data
+      refreshCrosshairs();
     };
     reader.readAsDataURL(file);
   }
@@ -395,8 +432,8 @@ cameraButton.addEventListener('click', async () => {
         // Set captured image to the <img> element
         pic.src = canvas.toDataURL('image/png');
         original_pic.src = canvas.toDataURL('image/png'); // Set the backup image to the captured one
-        refreshImage();
         updateImageData(); // Update the image data with new image
+        refreshCrosshairs();
 
         // Stop the video stream and hide the preview - doesn't seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
@@ -467,7 +504,7 @@ function changeZoom(selected_zoom) {
   frame.style.transform = `scale(${zoom})`;
   frame.parentElement.scrollTop = relativeY*zoom;
   frame.parentElement.scrollLeft = relativeX*zoom;
-  refreshImage();
+  refreshCrosshairs();
 }
 
 // Shrinks image for zoom-out functionality
@@ -525,8 +562,8 @@ function updateImageData() {
 
 function debug(onOff) {
   debugMode = true;
-  // Find the stylesheet (in this case the first/only one)
-  const sheet = document.styleSheets[0];
+  // Find the stylesheet (in this case the second one)
+  const sheet = document.styleSheets[1];
 
   let debugClass; // Will become the debug CSS class
 
@@ -563,26 +600,20 @@ document.addEventListener('keydown', function(event) {
     const step = 1;
     switch (event.key) {
       case 'ArrowUp':
-        frame.parentElement.scrollTop -= step;
-        lastMouseY -= step;
-        updateFocus();
+        scrollImage("y",false);
         break;
       case 'ArrowDown':
-        frame.parentElement.scrollTop += step;
-        lastMouseY += step;
-        updateFocus();
+        scrollImage("y",true);
         break;
       case 'ArrowLeft':
-        frame.parentElement.scrollLeft -= step;
-        lastMouseX -= step;
-        updateFocus();
+        scrollImage("x",false);
         break;
       case 'ArrowRight':
-        frame.parentElement.scrollLeft += step;
-        lastMouseX += step;
-        updateFocus();
+        scrollImage("x",true);
         break;
     }
+
+    // Then check for hidden codes
 
     if (inputSequence.length > debugSequence.length) {
         inputSequence.shift(); // Remove the oldest input if it exceeds the target length
@@ -600,10 +631,48 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+// Handles moving either the scrollbars or the crosshairs
+// Takes string of either 'x' or 'y' and directional bool (true for down/right, false for up/left)
+function scrollImage(axis, increment_up) {
+  const step = 1;
+  let dir = step;
+  if (!increment_up) {
+    dir *= -1;
+  }
+
+  let scrollName;
+  if (axis == 'x') {
+    scrollName = 'scrollLeft';
+    lastMouseX += dir;
+  }
+  else {
+    scrollName = 'scrollTop';
+    lastMouseY += dir;
+  }
+
+  const before_scroll = frame.parentElement[scrollName]; // Number - should get val not ref
+  frame.parentElement[scrollName] += dir;
+
+  if (frame.parentElement[scrollName] == before_scroll) { // No change - scrolling as far as you can!
+    if (axis == 'x') {
+    lastCrosshairX += dir;
+    }
+    else {
+      lastCrosshairY += dir;
+    }
+  }
+
+  updateFocus();
+}
+
 // Runs it initially
 if (!(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) { // Real
   console.log("Removing debug features");
   debug(false); // Turn off debug mode
+}
+else { // It is in debug mode
+  debug(true);
+  document.documentElement.style.background = '#222222';
 }
 
 ////////////////////////////////////////
@@ -612,8 +681,8 @@ if (!(window.location.hostname === "localhost" || window.location.hostname === "
 
 // Function to call on page load
 function init() {
-  // Check ELAB mode by default (and call change function)
-  elabCheck.checked = true;
+  // Uncheck ELAB mode by default (and call change function)
+  elabCheck.checked = false;
   elabChanger();
   // Do the same for brightness
   brightness_slider.value = 50;
