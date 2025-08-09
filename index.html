@@ -36,16 +36,21 @@
           <!-- Brightness Controls -->
           <div class="mb-3 debug">
             <label class="form-label">Brightness</label>
-            <input type="range" min="1" max="100" value="50" class="form-range" id="brightness">
-            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="brightness-reset">Reset</button>
+            <div class="d-flex align-items-center">
+              <input type="range" min="1" max="100" value="50" class="form-range me-2 flex-grow-1" id="brightness">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="brightness-reset">Reset</button>
+            </div>
           </div>
 
           <!-- Contrast Controls -->
           <div class="mb-3 debug">
             <label class="form-label">Contrast</label>
-            <input type="range" min="1" max="100" value="50" class="form-range" id="contrast">
-            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="contrast-reset">Reset</button>
+            <div class="d-flex align-items-center">
+              <input type="range" min="1" max="100" value="50" class="form-range me-2 flex-grow-1" id="contrast">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="contrast-reset">Reset</button>
+            </div>
           </div>
+
 
           <!-- Zoom Controls -->
           <fieldset class="mb-3 debug">
@@ -123,12 +128,19 @@
       <div class="col-4 col-lg-1">
         <div class="border rounded p-2 border-3">
           <h3 class="text-center">Add Your Own Image</h3>
-          <input type="file" id="image-upload-button" accept="image/*" class="form-control mb-2" />
+
+          <!-- Hidden file input -->
+          <input type="file" id="image-upload-button" accept="image/*" class="d-none" />
+
+          <!-- Custom label styled as button -->
+          <label for="image-upload-button" class="btn btn-outline-primary btn-sm mb-2">Upload</label>
+
           <button id="camera-button" class="btn btn-outline-primary btn-sm mb-1">Take Photo</button>
           <button id="camera-close-button" class="btn btn-outline-secondary btn-sm mb-1">Close Camera</button>
           <video id="camera-preview" class="w-100" autoplay></video>
         </div>
       </div>
+
 
     </div>
   </div>

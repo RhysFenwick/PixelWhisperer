@@ -25,8 +25,9 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 
 ## Fixes needed
 - Pixel off-by-one
-- Scrolling not moving the big image
 - General button padding reduction/spacing
 - Redo ANU branding
+- Overall aesthetics
+- Arrows moving main window
 
 
