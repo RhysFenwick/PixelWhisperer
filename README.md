@@ -29,5 +29,9 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 - Redo ANU branding
 - Overall aesthetics
 - Arrows moving main window
+- Mag glass resets on size change
+- Touch functionality
+- Phone layout centering
+- Camera to switch off when tab not in use
 
 

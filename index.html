@@ -112,11 +112,11 @@
       </div>
 
       <!-- Right: Selected Pixels -->
-      <div class="col-8 col-md-4 col-lg-2">
-        <div class="border rounded p-2 border-3">
+      <div class="col-8 col-md-4 col-lg-2 text-center">
+        <div class="border rounded p-2 border-3 text-center">
           <h3 class="text-center">Selected Pixels</h3>
           <ol id="pixel-list" class="overflow-auto" style="max-height:60vh;"></ol>
-          <div class="d-flex gap-2 mt-2">
+          <div class="d-flex gap-2 mt-2 text-center">
             <button id="copy-button" class="btn btn-primary btn-sm">Copy</button>
             <button id="export-button" class="btn btn-secondary btn-sm">Export</button>
             <button id="clear-button" class="btn btn-danger btn-sm">Clear</button>
@@ -125,9 +125,9 @@
       </div>
 
       <!-- Image Upload -->
-      <div class="col-4 col-lg-1">
+      <div class="col-4 col-lg-1 text-center">
         <div class="border rounded p-2 border-3">
-          <h3 class="text-center">Add Your Own Image</h3>
+          <h3 class="text-center">Change Image</h3>
 
           <!-- Hidden file input -->
           <input type="file" id="image-upload-button" accept="image/*" class="d-none" />
@@ -136,7 +136,7 @@
           <label for="image-upload-button" class="btn btn-outline-primary btn-sm mb-2">Upload</label>
 
           <button id="camera-button" class="btn btn-outline-primary btn-sm mb-1">Take Photo</button>
-          <button id="camera-close-button" class="btn btn-outline-secondary btn-sm mb-1">Close Camera</button>
+          <button id="camera-close-button" class="btn btn-outline-secondary btn-sm mb-1" style="display: none;">Close Camera</button>
           <video id="camera-preview" class="w-100" autoplay></video>
         </div>
       </div>

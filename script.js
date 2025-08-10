@@ -11,6 +11,7 @@ let brightness = 50; // Default brightness (no change)
 let contrast = 50; // Default contrast (no change)
 let lastMouseX = 0, lastMouseY = 0; // Last known mouse coords (for when scrolling the image without using a mouse)
 let lastCrosshairX = 0, lastCrosshairY = 0; // Similar to lastMouseX/Y but for the crosshair (i.e. relative to viewport not image)
+let lastTouchX = 0, lastTouchY = 0; // Similar to lastMouse but for touch
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -25,6 +26,7 @@ const brightness_slider = document.getElementById('brightness');
 const brightness_reset = document.getElementById('brightness-reset');
 const contrast_slider = document.getElementById('contrast');
 const contrast_reset = document.getElementById('contrast-reset');
+const tap_threshold = 10; // Pixel movement needed to become a drag rather than a tap
 
 // Set up canvas; blank until picture load
 const canvas = document.createElement("canvas");
@@ -297,23 +299,22 @@ function updateFocus() {
   pixelXY.textContent = `${Math.ceil(lastMouseX * inv_zoom / zoom)} right, ${Math.ceil(lastMouseY * inv_zoom / zoom)} down`;
 }
 
-// On mouseover, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
-pic.addEventListener("mousemove", function(event) {
+// On mouseover or drag, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
+function moveOrDrag(x,y) {
   const rect = pic.getBoundingClientRect();
   const fence_rect = fence.getBoundingClientRect();
-  lastMouseX = event.clientX - Math.floor(rect.left);
-  lastMouseY = event.clientY - Math.floor(rect.top);
-  lastCrosshairX = event.clientX - Math.floor(fence_rect.left);
-  lastCrosshairY = event.clientY - Math.floor(fence_rect.top);
+  lastMouseX = x - Math.floor(rect.left);
+  lastMouseY = y - Math.floor(rect.top);
+  lastCrosshairX = x - Math.floor(fence_rect.left);
+  lastCrosshairY = y - Math.floor(fence_rect.top);
   updateFocus();
-});
-
+}
 
 // Handles selecting pixels in the image
-pic.addEventListener('click', function(event) {
+function clickOrTap(tapX,tapY) {
   const rect = pic.getBoundingClientRect();
-  const x = event.clientX - Math.floor(rect.left);
-  const y = event.clientY - Math.floor(rect.top);
+  const x = tapX - Math.floor(rect.left);
+  const y = tapY - Math.floor(rect.top);
   const pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
 
   const pixelList = document.getElementById('pixel-list');
@@ -324,8 +325,41 @@ pic.addEventListener('click', function(event) {
 
   pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${hex} (${name})`));
   pixelList.appendChild(pixel);
+}
+
+// Mouse listeners
+pic.addEventListener("mousemove", function(event) {
+  moveOrDrag(event.clientX, event.clientY);
 });
 
+pic.addEventListener('click', function(event) {
+  clickOrTap(event.clientX, event.clientY);
+});
+
+// Touch listener logic
+// Touch listeners
+pic.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  lastTouchX = t.clientX;
+  lastTouchY = t.clientY;
+  moved = false;
+}, { passive: false });
+
+pic.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  if (Math.abs(t.clientX - lastTouchX) > tap_threshold ||
+      Math.abs(t.clientY - lastTouchY) > tap_threshold) {
+    moved = true;
+  }
+  moveOrDrag(t.clientX, t.clientY);
+}, { passive: false });
+
+pic.addEventListener('touchend', e => {
+  if (!moved) {
+    // Treat as click/tap
+    clickOrTap(lastTouchX, lastTouchY);
+  }
+});
 
 ////////////////////////////////////////
 // Pixel info buttons
@@ -448,8 +482,8 @@ cameraButton.addEventListener('click', async () => {
 
 closeButton.addEventListener('click', async () => {
 // Prompt user for camera access
-video.style.display = 'none'; // Show video preview
-closeButton.style.display = 'none'; // Show close button
+video.style.display = 'none'; // Hide video preview
+closeButton.style.display = 'none'; // Hide close button
 cameraButton.textContent = 'Take Photo';
 });
 
