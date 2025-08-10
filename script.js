@@ -339,6 +339,7 @@ pic.addEventListener('click', function(event) {
 // Touch listener logic
 // Touch listeners
 pic.addEventListener('touchstart', e => {
+  e.preventDefault(); // block page scroll
   const t = e.touches[0];
   lastTouchX = t.clientX;
   lastTouchY = t.clientY;
@@ -346,6 +347,7 @@ pic.addEventListener('touchstart', e => {
 }, { passive: false });
 
 pic.addEventListener('touchmove', e => {
+  e.preventDefault(); // block page scroll
   const t = e.touches[0];
   if (Math.abs(t.clientX - lastTouchX) > tap_threshold ||
       Math.abs(t.clientY - lastTouchY) > tap_threshold) {
@@ -355,6 +357,7 @@ pic.addEventListener('touchmove', e => {
 }, { passive: false });
 
 pic.addEventListener('touchend', e => {
+  e.preventDefault(); // block page scroll
   if (!moved) {
     // Treat as click/tap
     clickOrTap(lastTouchX, lastTouchY);
@@ -634,15 +637,19 @@ document.addEventListener('keydown', function(event) {
     const step = 1;
     switch (event.key) {
       case 'ArrowUp':
+        event.preventDefault(); // block page scroll
         scrollImage("y",false);
         break;
       case 'ArrowDown':
+        event.preventDefault(); // block page scroll
         scrollImage("y",true);
         break;
       case 'ArrowLeft':
+        event.preventDefault(); // block page scroll
         scrollImage("x",false);
         break;
       case 'ArrowRight':
+        event.preventDefault(); // block page scroll
         scrollImage("x",true);
         break;
     }
