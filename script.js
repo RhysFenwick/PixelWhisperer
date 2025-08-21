@@ -20,6 +20,7 @@ const pic = document.getElementById('picker-image');
 const original_pic = document.getElementById('original-image'); // Backup image for zooming out
 const frame = document.getElementById('picture-frame');
 const fence = document.getElementById('image-fence');
+const arrowpad = document.getElementById('arrowpad');
 horizontalLine.style.width = `${fence.width}px`;
 verticalLine.style.height = `${fence.height}px`;
 const brightness_slider = document.getElementById('brightness');
@@ -673,9 +674,8 @@ document.addEventListener('keydown', function(event) {
 });
 
 // Handles moving either the scrollbars or the crosshairs
-// Takes string of either 'x' or 'y' and directional bool (true for down/right, false for up/left)
-function scrollImage(axis, increment_up) {
-  const step = 1;
+// Takes string of either 'x' or 'y' and directional bool (true for down/right, false for up/left) plus optional step distance
+function scrollImage(axis, increment_up, step=1) {
   let dir = step;
   if (!increment_up) {
     dir *= -1;
@@ -720,6 +720,19 @@ else { // It is in debug mode
 // Initisalisation
 ////////////////////////////////////////
 
+// Bind/set up arrow pad
+function initArrowPad() {
+  document.getElementById("up").addEventListener("click", () => scrollImage("y", false, 1));
+  document.getElementById("down").addEventListener("click", () => scrollImage("y", true, 1));
+  document.getElementById("left").addEventListener("click", () => scrollImage("x", false, 1));
+  document.getElementById("right").addEventListener("click", () => scrollImage("x", true, 1));
+
+  document.getElementById("fast-up").addEventListener("click", () => scrollImage("y", false, 5));
+  document.getElementById("fast-down").addEventListener("click", () => scrollImage("y", true, 5));
+  document.getElementById("fast-left").addEventListener("click", () => scrollImage("x", false, 5));
+  document.getElementById("fast-right").addEventListener("click", () => scrollImage("x", true, 5));
+}
+
 // Function to call on page load
 function init() {
   // Uncheck ELAB mode by default (and call change function)
@@ -737,6 +750,9 @@ function init() {
   // Make sure the correct zoom radio button is checked
   document.getElementById('zoom-1').click();
 
+  // Set up arrow pad
+  initArrowPad();
+
   // Should be called on picture load; duplicating here to make sure it happens the first time as well
   canvas.width = pic.width;
   canvas.height = pic.height;
@@ -751,3 +767,22 @@ pic.onload = function () {
   ctx.drawImage(pic, 0, 0, pic.width, pic.height);
   updateImageData(); // Initialise the data
 };
+
+// See if it's a touch device and offer onscreen options if so
+function isTouchDevice() {
+  return (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0
+  );
+}
+
+if (isTouchDevice()) {
+  console.log("This device supports touch input.");
+  // Implement touch-specific logic
+  arrowpad.style.display = 'block';
+
+} else {
+  console.log("This device does not appear to support touch input.");
+  // Implement non-touch-specific logic
+}

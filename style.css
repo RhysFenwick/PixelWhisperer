@@ -57,6 +57,10 @@ html {
     /* This is filled programatically */
 }
 
+#arrowpad {
+  display: none;
+}
+
 .border {
     border-color: var(--main-accent);
 }

@@ -21,17 +21,18 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 ## Broader Accessibility
 - Keyboard controls (maybe have keyboard input reset to top left?)
 - Bulk file analysis
-- Throw it into e.g. Bootstrap to allow resizing
 
 ## Fixes needed
 - Pixel off-by-one
 - General button padding reduction/spacing
 - Redo ANU branding
 - Overall aesthetics
-- Arrows moving main window
+- Arrows moving main window (done)
 - Mag glass resets on size change
-- Touch functionality
+- Touch functionality (done-ish)
 - Phone layout centering
 - Camera to switch off when tab not in use
+- Add on-screen controls for touch devices (done?)
+
 
 
