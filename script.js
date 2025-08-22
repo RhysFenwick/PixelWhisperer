@@ -288,8 +288,8 @@ function updateFocus() {
     const magRow = Math.floor(i / magSize) -1; // Row number in the magnifying glass
     const magCol = i % magSize -1; // Column number in the magnifying glass
 
-    let magPixelX = Math.floor((lastMouseX - (magSize - 1)/2 + magCol)/zoom);
-    let magPixelY = Math.floor((lastMouseY - (magSize - 1)/2 + magRow)/zoom);
+    let magPixelX = Math.floor((lastMouseX - (magSize - 1)/2 + magCol));
+    let magPixelY = Math.floor((lastMouseY - (magSize - 1)/2 + magRow));
 
     const magData = getPixelFromFullData(magPixelX, magPixelY);
     const magColour = rgbToHex(magData[0], magData[1], magData[2]);
@@ -307,8 +307,8 @@ function moveOrDrag(x,y) {
   const fence_rect = fence.getBoundingClientRect();
   lastMouseX = x - Math.floor(rect.left);
   lastMouseY = y - Math.floor(rect.top);
-  lastCrosshairX = x - Math.floor(imgbox.getBoundingClientRect().left);
-  lastCrosshairY = y - Math.floor(imgbox.getBoundingClientRect().top);
+  lastCrosshairX = x - Math.floor(fence_rect.left);
+  lastCrosshairY = y - Math.floor(fence_rect.top);
   console.log(`${x} ${fence_rect.left}`);
   updateFocus();
 }
@@ -425,8 +425,8 @@ function pixelListToString(pixelList) {
 // General crosshair refresh function
 function refreshCrosshairs() {
   // Lengthen the crosshairs but keep them narrow
-  horizontalLine.style.width = `${pic.width}px`;
-  verticalLine.style.height = `${pic.height}px`;
+  horizontalLine.style.width = `${frame.width}px`;
+  verticalLine.style.height = `${frame.height}px`;
 }
 
 // Handle image upload
@@ -530,70 +530,49 @@ document.querySelectorAll('input[name="zoom"]').forEach(radio => {
 
 // Function to change zoom
 function changeZoom(selected_zoom) {
-  if (selected_zoom < 1) { // Zooming out
-    zoom = 1;
-    inv_zoom = 1/selected_zoom; // E.g. will be 2 for 0.5x zoom
-    downsampleImage(pic,original_pic,inv_zoom);
-  }
-  else {
-    pic.src = original_pic.src; // Reset to original image
-    zoom = selected_zoom;
-    inv_zoom = 1;
-  }
+  // selected_zoom can be <1 (zoom out) or >=1 (zoom in)
+  zoom = selected_zoom;
 
-  frame.style.transform = `scale(${zoom})`;
-  frame.parentElement.scrollTop = relativeY*zoom;
-  frame.parentElement.scrollLeft = relativeX*zoom;
+  redrawCanvas(original_pic, zoom);
+
+  frame.parentElement.scrollTop = relativeY * zoom;
+  frame.parentElement.scrollLeft = relativeX * zoom;
   refreshCrosshairs();
 }
 
-// Shrinks image for zoom-out functionality
-function downsampleImage(outElement, inElement, zoomout) {
-  const w = inElement.naturalWidth;
-  const h = inElement.naturalHeight;
 
-  const inputCanvas = document.createElement('canvas');
-  const ctx = inputCanvas.getContext('2d');
-  inputCanvas.width = w;
-  inputCanvas.height = h;
-  ctx.drawImage(inElement, 0, 0);
+// Redraws canvas on zoom change
+function redrawCanvas(imgElement, zoomFactor) {
+  const w = imgElement.naturalWidth;
+  const h = imgElement.naturalHeight;
 
-  const inputData = ctx.getImageData(0, 0, w, h).data;
+  // Canvas size is scaled by zoom factor (can be <1 or >1)
+  canvas.width  = Math.max(1, Math.round(w * zoomFactor));
+  canvas.height = Math.max(1, Math.round(h * zoomFactor));
 
-  const outW = Math.floor(w / zoomout);
-  const outH = Math.floor(h / zoomout);
+  ctx.imageSmoothingEnabled = false; // nearest-neighbour always
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const outputCanvas = document.createElement('canvas');
-  const outputCtx = outputCanvas.getContext('2d');
-  outputCanvas.width = outW;
-  outputCanvas.height = outH;
-  const outputImageData = outputCtx.createImageData(outW, outH);
-  const outputData = outputImageData.data;
+  ctx.drawImage(
+    imgElement,
+    0, 0, w, h,                   // source
+    0, 0, canvas.width, canvas.height // destination
+  );
 
-  for (let y = 0; y < outH; y++) {
-    for (let x = 0; x < outW; x++) {
-      const srcX = x * zoomout;
-      const srcY = y * zoomout;
-      const srcIndex = (srcY * w + srcX) * 4;
-      const dstIndex = (y * outW + x) * 4;
+  // Update the visible <img>
+  pic.src = canvas.toDataURL();
 
-      for (let i = 0; i < 4; i++) {
-        outputData[dstIndex + i] = inputData[srcIndex + i]; // copy RGBA
-      }
-    }
-  }
-
-  outputCtx.putImageData(outputImageData, 0, 0);
-  outElement.src = outputCanvas.toDataURL();
+  updateImageData(); // keeps fullData in sync
 }
+
 
 ////////////////////////////////////////
 // Image/canvas setup
 ////////////////////////////////////////
 
 function updateImageData() {
-  fullImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  fullData = fullImageData.data;
+fullImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+fullData = fullImageData.data;
 }
 
 ////////////////////////////////////////
@@ -763,8 +742,8 @@ function init() {
 
   // Start off the crosshair in the middle
   refreshCrosshairs();
-  horizontalLine.style.top = `${Math.floor((pic.height)/2)}px`;
-  verticalLine.style.left = `${Math.floor((pic.width)/2)}px`;
+  horizontalLine.style.top = `${Math.floor((frame.height)/2)}px`;
+  verticalLine.style.left = `${Math.floor((frame.width)/2)}px`;
 };
 
 // Called when picture is first loaded
@@ -776,8 +755,8 @@ pic.onload = function () {
 
   // Start off the crosshair in the middle
   refreshCrosshairs();
-  horizontalLine.style.top = `${Math.floor((pic.height)/2)}px`;
-  verticalLine.style.left = `${Math.floor((pic.width)/2)}px`;
+  horizontalLine.style.top = `${Math.floor((frame.height)/2)}px`;
+  verticalLine.style.left = `${Math.floor((frame.width)/2)}px`;
 };
 
 // See if it's a touch device and offer onscreen options if so

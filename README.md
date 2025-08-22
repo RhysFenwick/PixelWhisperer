@@ -29,11 +29,14 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 - Arrows moving main window (done)
 - Mag glass resets on size change
 - Touch functionality (done-ish)
-- Phone layout centering
+- Phone layout centering (done)
 - Camera to switch off when tab not in use
 - Add on-screen controls for touch devices (done?)
 - Make crosshairs start in middle on touch devices (done)
 - Picture shouldn't resize with window resize!!
+- Pixel selection doesn't update on scroll
+- Crosshair clamping doesn't handle overall window scrolling well
+
 
 
 

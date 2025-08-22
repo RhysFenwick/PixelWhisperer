@@ -37,6 +37,10 @@ html {
   align-items: center;
 }
 
+#picker-image {
+  image-rendering: pixelated;
+}
+
 
 .rgb-bar {
   width: 100%;
