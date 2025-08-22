@@ -24,12 +24,12 @@
           <!-- Image Box -->
           <div id="img-box" class="position-relative border">
             <div id="image-fence" class="overflow-auto">
-              <div id="picture-frame" class="overflow-auto">
+              <div id="picture-frame">
                 <img id="picker-image" class="img-fluid" src="img/Ducklings right.jpg" />
                 <img id="original-image" class="img-fluid" src="img/Ducklings right.jpg" style="display:none;" />
+                <div id="horizontal-line" class="crosshair-line"></div>
+                <div id="vertical-line" class="crosshair-line"></div>
               </div>
-              <div id="horizontal-line" class="crosshair-line"></div>
-              <div id="vertical-line" class="crosshair-line"></div>
             </div>
           </div>
 
@@ -120,7 +120,7 @@
       </div>
 
       <!-- Middle: Colour Info -->
-      <div class="col-8 col-md-4 col-lg-2">
+      <div class="col-8 col-md-4 col-lg-2 mx-auto">
         <div class="border rounded p-2 border-3">
           <h3 class="text-center">Colour Info</h3>
           <h4>Closest colour name</h4>
@@ -145,7 +145,7 @@
       </div>
 
       <!-- Right: Selected Pixels -->
-      <div class="col-8 col-md-4 col-lg-2 text-center">
+      <div class="col-8 col-md-4 col-lg-2 text-center mx-auto">
         <div class="border rounded p-2 border-3 text-center">
           <h3 class="text-center">Selected Pixels</h3>
           <ol id="pixel-list" class="overflow-auto" style="max-height:60vh;"></ol>
@@ -158,7 +158,7 @@
       </div>
 
       <!-- Image Upload -->
-      <div class="col-4 col-lg-1 text-center">
+      <div class="col-4 col-lg-1 text-center mx-auto">
         <div class="border rounded p-2 border-3">
           <h3 class="text-center">Change Image</h3>
 

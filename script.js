@@ -20,6 +20,7 @@ const pic = document.getElementById('picker-image');
 const original_pic = document.getElementById('original-image'); // Backup image for zooming out
 const frame = document.getElementById('picture-frame');
 const fence = document.getElementById('image-fence');
+const imgbox = document.getElementById('img-box');
 const arrowpad = document.getElementById('arrowpad');
 horizontalLine.style.width = `${fence.width}px`;
 verticalLine.style.height = `${fence.height}px`;
@@ -243,15 +244,15 @@ function updateFocus() {
   if (lastMouseX < 0) {
     lastMouseX = 0;
   }
-  else if (lastCrosshairX > fence.offsetWidth) {
-    lastCrosshairX = fence.offsetWidth;
+  else if (lastCrosshairX > imgbox.getBoundingClientRect().right) {
+    lastCrosshairX = imgbox.getBoundingClientRect().right;
   }
 
   if (lastCrosshairY < 0) {
     lastCrosshairY = 0;
   }
-  else if (lastCrosshairY > fence.offsetHeight) {
-    lastCrosshairY = fence.offsetHeight;
+  else if (lastCrosshairY > imgbox.getBoundingClientRect().bottom) {
+    lastCrosshairY = imgbox.getBoundingClientRect().bottom;
   }
 
   if (lastMouseX < 0) {
@@ -295,8 +296,8 @@ function updateFocus() {
     magPixels.item(i).style.backgroundColor = "#" + magColour;
   }
 
-  horizontalLine.style.top = `${lastCrosshairY}px`;
-  verticalLine.style.left = `${lastCrosshairX}px`;
+  horizontalLine.style.top = `${lastCrosshairY - 1}px`;
+  verticalLine.style.left = `${lastCrosshairX - 1}px`;
   pixelXY.textContent = `${Math.ceil(lastMouseX * inv_zoom / zoom)} right, ${Math.ceil(lastMouseY * inv_zoom / zoom)} down`;
 }
 
@@ -306,8 +307,9 @@ function moveOrDrag(x,y) {
   const fence_rect = fence.getBoundingClientRect();
   lastMouseX = x - Math.floor(rect.left);
   lastMouseY = y - Math.floor(rect.top);
-  lastCrosshairX = x - Math.floor(fence_rect.left);
-  lastCrosshairY = y - Math.floor(fence_rect.top);
+  lastCrosshairX = x - Math.floor(imgbox.getBoundingClientRect().left);
+  lastCrosshairY = y - Math.floor(imgbox.getBoundingClientRect().top);
+  console.log(`${x} ${fence_rect.left}`);
   updateFocus();
 }
 
@@ -423,8 +425,8 @@ function pixelListToString(pixelList) {
 // General crosshair refresh function
 function refreshCrosshairs() {
   // Lengthen the crosshairs but keep them narrow
-  horizontalLine.style.width = `${Math.min(pic.offsetWidth, fence.offsetWidth)}px`;
-  verticalLine.style.height = `${Math.min(pic.offsetHeight, fence.offsetHeight)}px`;
+  horizontalLine.style.width = `${pic.width}px`;
+  verticalLine.style.height = `${pic.height}px`;
 }
 
 // Handle image upload
@@ -758,6 +760,11 @@ function init() {
   canvas.height = pic.height;
   ctx.drawImage(pic, 0, 0, pic.width, pic.height);
   updateImageData(); // Initialise the data
+
+  // Start off the crosshair in the middle
+  refreshCrosshairs();
+  horizontalLine.style.top = `${Math.floor((pic.height)/2)}px`;
+  verticalLine.style.left = `${Math.floor((pic.width)/2)}px`;
 };
 
 // Called when picture is first loaded
@@ -766,6 +773,11 @@ pic.onload = function () {
   canvas.height = pic.height;
   ctx.drawImage(pic, 0, 0, pic.width, pic.height);
   updateImageData(); // Initialise the data
+
+  // Start off the crosshair in the middle
+  refreshCrosshairs();
+  horizontalLine.style.top = `${Math.floor((pic.height)/2)}px`;
+  verticalLine.style.left = `${Math.floor((pic.width)/2)}px`;
 };
 
 // See if it's a touch device and offer onscreen options if so
@@ -786,3 +798,12 @@ if (isTouchDevice()) {
   console.log("This device does not appear to support touch input.");
   // Implement non-touch-specific logic
 }
+
+// Detect window resize
+window.addEventListener("resize", function() {
+  // Code to execute when the window is resized
+  console.log("Window resized!");
+  // Example: Get and display current window dimensions
+  updateFocus();
+  refreshCrosshairs();
+});

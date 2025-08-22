@@ -25,14 +25,15 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 ## Fixes needed
 - Pixel off-by-one
 - General button padding reduction/spacing
-- Redo ANU branding
-- Overall aesthetics
+- Redo ANU branding/overall aesthetics
 - Arrows moving main window (done)
 - Mag glass resets on size change
 - Touch functionality (done-ish)
 - Phone layout centering
 - Camera to switch off when tab not in use
 - Add on-screen controls for touch devices (done?)
+- Make crosshairs start in middle on touch devices (done)
+- Picture shouldn't resize with window resize!!
 
 
 
