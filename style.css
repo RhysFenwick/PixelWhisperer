@@ -76,3 +76,13 @@ html {
 .border {
     border-color: var(--main-accent);
 }
+
+/* Target small screens only */
+@media (max-width: 992px) {   /* matches your Bootstrap col-lg breakpoint */
+  #img-box,
+  #image-fence,
+  #picture-frame {
+    width: 90vw;      /* expand viewport up to 90% of screen width */
+    max-width: 90vw;
+  }
+}

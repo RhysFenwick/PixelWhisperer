@@ -443,6 +443,7 @@ document.getElementById('image-upload-button').addEventListener('change', functi
     };
     reader.readAsDataURL(file);
   }
+  window.scrollTo(0,0); // Scroll to top (shouldn't make a difference on PC, but useful on mobile)
 });
   
 // Handle camera capture
@@ -484,6 +485,7 @@ cameraButton.addEventListener('click', async () => {
   } catch (error) {
     console.error('Camera access was denied:', error);
   }
+  window.scrollTo(0,0);
 });
 
 closeButton.addEventListener('click', async () => {

@@ -17,10 +17,14 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 - Make scrollbars fall outside image if possible
 - Intensity measurement? (possibly HSV rather than RGB, or alpha channel)
 - Add live feed function
+- Make selected pixels refer back to where on screen when clicked
+- Labels on the picture for selected pixels
 
 ## Broader Accessibility
 - Keyboard controls (maybe have keyboard input reset to top left?)
 - Bulk file analysis
+- "Reverse engineer" mode - start with colour, highlight it on the picture
+- Custm colour list upload
 
 ## Fixes needed
 - Pixel off-by-one
@@ -33,7 +37,7 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 - Camera to switch off when tab not in use
 - Add on-screen controls for touch devices (done?)
 - Make crosshairs start in middle on touch devices (done)
-- Picture shouldn't resize with window resize!!
+- Picture shouldn't resize with window resize!! (done)
 - Pixel selection doesn't update on scroll
 - Crosshair clamping doesn't handle overall window scrolling well
 
