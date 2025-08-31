@@ -22,6 +22,7 @@ const frame = document.getElementById('picture-frame');
 const fence = document.getElementById('image-fence');
 const imgbox = document.getElementById('img-box');
 const arrowpad = document.getElementById('arrowpad');
+const pic_caption = document.getElementById('pic-caption');
 horizontalLine.style.width = `${fence.width}px`;
 verticalLine.style.height = `${fence.height}px`;
 const brightness_slider = document.getElementById('brightness');
@@ -296,6 +297,7 @@ function updateFocus() {
   horizontalLine.style.top = `${lastCrosshairY - 1 + (imgbox.getBoundingClientRect().height - fence.getBoundingClientRect().height)/2}px`;
   verticalLine.style.left = `${lastCrosshairX - 1 + (imgbox.getBoundingClientRect().width - fence.getBoundingClientRect().width)/2}px`;
   pixelXY.textContent = `${Math.ceil(lastMouseX * inv_zoom / zoom)} right, ${Math.ceil(lastMouseY * inv_zoom / zoom)} down`;
+  pic_caption.textContent = `This pixel is approximately ${colourName}.`
 }
 
 // On mouseover or drag, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
