@@ -38,7 +38,7 @@ html {
 }
 
 #picker-image {
-  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 

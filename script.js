@@ -237,42 +237,39 @@ function getPixelFromFullData(x, y) {
 
 // Triggered on mouse move or arrow keys
 function updateFocus() {
-  console.log(pic.offsetWidth);
 
   // Make sure variables are clamped as needed
   // Very messy but so be it
   if (lastMouseX < 0) {
     lastMouseX = 0;
   }
-  else if (lastCrosshairX > imgbox.getBoundingClientRect().right) {
-    lastCrosshairX = imgbox.getBoundingClientRect().right;
+  else if (lastCrosshairX > fence.getBoundingClientRect().width) {
+    lastCrosshairX = fence.getBoundingClientRect().width;
   }
 
   if (lastCrosshairY < 0) {
     lastCrosshairY = 0;
   }
-  else if (lastCrosshairY > imgbox.getBoundingClientRect().bottom) {
-    lastCrosshairY = imgbox.getBoundingClientRect().bottom;
+  else if (lastCrosshairY > fence.getBoundingClientRect().height) {
+    lastCrosshairY = fence.getBoundingClientRect().height;
   }
 
   if (lastMouseX < 0) {
     lastMouseX = 0;
   }
-  else if (lastMouseX > pic.offsetWidth * zoom) {
-    lastMouseX = pic.offsetWidth * zoom;
+  else if (lastMouseX > pic.width) {
+    lastMouseX = pic.width;
   }
 
   if (lastMouseY < 0) {
     lastMouseY = 0;
   }
-  else if (lastMouseY > pic.offsetHeight * zoom) {
-    lastMouseY = pic.offsetHeight * zoom;
+  else if (lastMouseY > pic.height) {
+    lastMouseY = pic.height;
   }
 
-  const px = Math.floor(lastMouseX / zoom);
-  const py = Math.floor(lastMouseY / zoom);
-
-  const pixelData = getPixelFromFullData(px, py);
+  const pixelData = getPixelFromFullData(lastMouseX, lastMouseY);
+  console.log(lastMouseX);
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const [colourHex, colourName] = closestcolour(totalList, hex);
 
@@ -296,8 +293,8 @@ function updateFocus() {
     magPixels.item(i).style.backgroundColor = "#" + magColour;
   }
 
-  horizontalLine.style.top = `${lastCrosshairY - 1}px`;
-  verticalLine.style.left = `${lastCrosshairX - 1}px`;
+  horizontalLine.style.top = `${lastCrosshairY - 1 + (imgbox.getBoundingClientRect().height - fence.getBoundingClientRect().height)/2}px`;
+  verticalLine.style.left = `${lastCrosshairX - 1 + (imgbox.getBoundingClientRect().width - fence.getBoundingClientRect().width)/2}px`;
   pixelXY.textContent = `${Math.ceil(lastMouseX * inv_zoom / zoom)} right, ${Math.ceil(lastMouseY * inv_zoom / zoom)} down`;
 }
 
@@ -318,7 +315,13 @@ function clickOrTap(tapX,tapY) {
   const rect = pic.getBoundingClientRect();
   const x = tapX - Math.floor(rect.left);
   const y = tapY - Math.floor(rect.top);
-  const pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
+  var pixelData;
+  if (zoom < 1 ) {
+    pixelData = ctx.getImageData(x, y, 1, 1).data;
+  }
+  else {
+    pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
+  } 
 
   const pixelList = document.getElementById('pixel-list');
   const pixel = document.createElement('li');
@@ -425,8 +428,8 @@ function pixelListToString(pixelList) {
 // General crosshair refresh function
 function refreshCrosshairs() {
   // Lengthen the crosshairs but keep them narrow
-  horizontalLine.style.width = `${frame.width}px`;
-  verticalLine.style.height = `${frame.height}px`;
+  horizontalLine.style.width = `${fence.getBoundingClientRect().width}px`;
+  verticalLine.style.height = `${fence.getBoundingClientRect().height}px`;
 }
 
 // Handle image upload
@@ -744,8 +747,8 @@ function init() {
 
   // Start off the crosshair in the middle
   refreshCrosshairs();
-  horizontalLine.style.top = `${Math.floor((frame.height)/2)}px`;
-  verticalLine.style.left = `${Math.floor((frame.width)/2)}px`;
+  horizontalLine.style.top = `${Math.floor((fence.height)/2)}px`;
+  verticalLine.style.left = `${Math.floor((fence.width)/2)}px`;
 };
 
 // Called when picture is first loaded
@@ -757,8 +760,8 @@ pic.onload = function () {
 
   // Start off the crosshair in the middle
   refreshCrosshairs();
-  horizontalLine.style.top = `${Math.floor((frame.height)/2)}px`;
-  verticalLine.style.left = `${Math.floor((frame.width)/2)}px`;
+  horizontalLine.style.top = `${Math.floor((fence.height)/2)}px`;
+  verticalLine.style.left = `${Math.floor((fence.width)/2)}px`;
 };
 
 // See if it's a touch device and offer onscreen options if so
