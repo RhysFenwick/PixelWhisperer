@@ -333,6 +333,9 @@ function clickOrTap(tapX,tapY) {
 
   pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${hex} (${name})`));
   pixelList.appendChild(pixel);
+
+  // Then also move to that point
+  moveOrDrag(tapX,tapY);
 }
 
 // Mouse listeners
