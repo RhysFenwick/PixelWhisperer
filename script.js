@@ -375,6 +375,18 @@ pic.addEventListener('touchend', e => {
   }
 });
 
+// Pop-up function
+function popUp() {
+    var popup = document.getElementById("image-popup-text");
+  popup.classList.toggle("show");
+}
+
+// Pop-up event listener
+const imagePopup = document.getElementById("image-popup-icon");
+imagePopup.addEventListener('click', function () {
+  popUp();
+});
+
 ////////////////////////////////////////
 // Pixel info buttons
 ////////////////////////////////////////
