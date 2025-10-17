@@ -475,7 +475,7 @@ const video = document.getElementById('camera-preview');
 cameraButton.addEventListener('click', async () => {
   // Prompt user for camera access
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: {facingMode : 'environment'} });
     video.srcObject = stream;
     video.style.display = 'block'; // Show video preview
     closeButton.style.display = 'block'; // Show close button
