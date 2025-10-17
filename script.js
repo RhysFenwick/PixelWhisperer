@@ -538,16 +538,12 @@ elabCheck.addEventListener('change', function() {
   elabChanger();
 });
 
-// Listener for zoom functionality
-document.querySelectorAll('input[name="zoom"]').forEach(radio => {
-  radio.addEventListener('change', function () {
-    
-    // Gets selected zoom value from radio button...
-    const selected_zoom = parseFloat(this.value);
-
-    // ...and calls the changeZoom function with it
-    changeZoom(selected_zoom);
-  });
+// Listener for people pressing the zoom in or zoom out buttons
+document.getElementById('zoom-in').addEventListener('click', function() {
+  changeZoom(zoom * 2);
+});
+document.getElementById('zoom-out').addEventListener('click', function() {
+  changeZoom(zoom / 2);
 });
 
 // Function to change zoom
@@ -560,6 +556,9 @@ function changeZoom(selected_zoom) {
   frame.parentElement.scrollTop = relativeY * zoom;
   frame.parentElement.scrollLeft = relativeX * zoom;
   refreshCrosshairs();
+
+  // Update zoom level display
+  document.getElementById('zoom-level').textContent = `x${zoom}`;
 }
 
 

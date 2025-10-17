@@ -77,6 +77,13 @@ html {
     border-color: var(--main-accent);
 }
 
+#zoom-level-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+}
+
 /* Target small screens only */
 @media (max-width: 992px) {   /* matches your Bootstrap col-lg breakpoint */
   #img-box,
