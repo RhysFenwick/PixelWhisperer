@@ -780,6 +780,20 @@ pic.onload = function () {
   verticalLine.style.left = `${Math.floor((fence.width)/2)}px`;
 };
 
+// When a picture is loaded, adjust zoom to whatever level would best fit it in the frame
+pic.addEventListener('load', function() {
+  // Calculate best fit zoom
+  const frameWidth = frame.getBoundingClientRect().width;
+  const frameHeight = frame.getBoundingClientRect().height;
+  // Zooms must be powers of two (1, 2, 0.5, 0.25, etc)
+  const initialWidthRatio = frameWidth / pic.naturalWidth;
+  const initialHheightRatio = frameHeight / pic.naturalHeight;
+  const widthRatio = Math.pow(2, Math.floor(Math.log2(initialWidthRatio)));
+  const heightRatio = Math.pow(2, Math.floor(Math.log2(initialHheightRatio)));
+  const bestFitZoom = Math.min(widthRatio, heightRatio, 1); // Don't exceed 1x zoom
+  changeZoom(bestFitZoom);
+});
+
 // See if it's a touch device and offer onscreen options if so
 function isTouchDevice() {
   return (
