@@ -464,6 +464,7 @@ document.getElementById('image-upload-button').addEventListener('change', functi
     reader.readAsDataURL(file);
   }
   window.scrollTo(0,0); // Scroll to top (shouldn't make a difference on PC, but useful on mobile)
+  adjustZoomToFit(); // Adjust zoom to fit new image
 });
   
 // Handle camera capture
@@ -495,6 +496,7 @@ cameraButton.addEventListener('click', async () => {
         original_pic.src = canvas.toDataURL('image/png'); // Set the backup image to the captured one
         updateImageData(); // Update the image data with new image
         refreshCrosshairs();
+        adjustZoomToFit();
 
         // Stop the video stream and hide the preview - doesn't seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
@@ -747,10 +749,11 @@ function init() {
   contrast_slider.value = 50;
   changeContrast();
 
-  magZoom();
+  // Adjust zoom to fit image in frame
+  adjustZoomToFit();
 
-  // Make sure the correct zoom radio button is checked
-  document.getElementById('zoom-1').click();
+  // Set up magnifying glass
+  magZoom();
 
   // Set up arrow pad
   initArrowPad();
@@ -781,18 +784,19 @@ pic.onload = function () {
 };
 
 // When a picture is loaded, adjust zoom to whatever level would best fit it in the frame
-pic.addEventListener('load', function() {
+function adjustZoomToFit() {
   // Calculate best fit zoom
   const frameWidth = frame.getBoundingClientRect().width;
   const frameHeight = frame.getBoundingClientRect().height;
   // Zooms must be powers of two (1, 2, 0.5, 0.25, etc)
   const initialWidthRatio = frameWidth / pic.naturalWidth;
-  const initialHheightRatio = frameHeight / pic.naturalHeight;
+  const initialHeightRatio = frameHeight / pic.naturalHeight;
   const widthRatio = Math.pow(2, Math.floor(Math.log2(initialWidthRatio)));
-  const heightRatio = Math.pow(2, Math.floor(Math.log2(initialHheightRatio)));
+  const heightRatio = Math.pow(2, Math.floor(Math.log2(initialHeightRatio)));
   const bestFitZoom = Math.min(widthRatio, heightRatio, 1); // Don't exceed 1x zoom
   changeZoom(bestFitZoom);
-});
+  console.log(`Best fit zoom: ${bestFitZoom}`);
+};
 
 // See if it's a touch device and offer onscreen options if so
 function isTouchDevice() {
