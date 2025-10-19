@@ -187,6 +187,11 @@ input[name="zoom"] {
     overflow-y: scroll;
 }
 
+.colour-square {
+    width: 20px;
+    height: 20px;
+}
+
 /* Crosshair */
 
 .crosshair-line {

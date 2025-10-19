@@ -279,7 +279,13 @@ pic.addEventListener('click', function(event) {
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const name = closestcolour(totalList, hex)[1];
 
+  // Add colour square to pixel list
+  const colourSquare = document.createElement('div');
+  colourSquare.className = 'colour-square';
+  colourSquare.style.backgroundColor = `#${hex}`;
+
   pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${hex} (${name})`));
+  pixel.appendChild(colourSquare);
   pixelList.appendChild(pixel);
 });
 
