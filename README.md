@@ -10,19 +10,37 @@ This software is published under the [MIT License](https://opensource.org/licens
 
 [Color Name & Hue by Daniel Flueck](https://www.color-blindness.com/color-name-hue/)
 
+A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Coventry for their assistance and support.
+
 ## TODO
 - Make crosshairs fall on pixel, not between them
-- Add credits
 - Make scrollbars fall outside image if possible
-- Fix offset zoomed-in pixel coords
 - Intensity measurement? (possibly HSV rather than RGB, or alpha channel)
-- Saturation slider?
 - Add live feed function
+- Make selected pixels refer back to where on screen when clicked
+- Labels on the picture for selected pixels
 
 ## Broader Accessibility
 - Keyboard controls (maybe have keyboard input reset to top left?)
 - Bulk file analysis
-- Throw it into e.g. Bootstrap to allow resizing
+- "Reverse engineer" mode - start with colour, highlight it on the picture
+- Custm colour list upload
+
+## Fixes needed
+- Pixel off-by-one
+- General button padding reduction/spacing
+- Redo ANU branding/overall aesthetics
+- Arrows moving main window (done)
+- Mag glass resets on size change
+- Touch functionality (done-ish)
+- Phone layout centering (done)
+- Camera to switch off when tab not in use
+- Add on-screen controls for touch devices (done?)
+- Make crosshairs start in middle on touch devices (done)
+- Picture shouldn't resize with window resize!! (done)
+- Pixel selection doesn't update on scroll
+- Crosshair clamping doesn't handle overall window scrolling well
+
 
 
 

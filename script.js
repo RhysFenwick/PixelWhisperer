@@ -9,6 +9,9 @@ let debugMode = false;
 let fullImageData, fullData; // Will hold the full image data to prevent many calls to getImageData
 let brightness = 50; // Default brightness (no change)
 let contrast = 50; // Default contrast (no change)
+let lastMouseX = 0, lastMouseY = 0; // Last known mouse coords (for when scrolling the image without using a mouse)
+let lastCrosshairX = 0, lastCrosshairY = 0; // Similar to lastMouseX/Y but for the crosshair (i.e. relative to viewport not image)
+let lastTouchX = 0, lastTouchY = 0; // Similar to lastMouse but for touch
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -16,12 +19,17 @@ const pixelXY = document.getElementById('pixel-xy');
 const pic = document.getElementById('picker-image');
 const original_pic = document.getElementById('original-image'); // Backup image for zooming out
 const frame = document.getElementById('picture-frame');
-horizontalLine.style.width = `${pic.width}px`;
-verticalLine.style.height = `${pic.height}px`;
+const fence = document.getElementById('image-fence');
+const imgbox = document.getElementById('img-box');
+const arrowpad = document.getElementById('arrowpad');
+const pic_caption = document.getElementById('pic-caption');
+horizontalLine.style.width = `${fence.width}px`;
+verticalLine.style.height = `${fence.height}px`;
 const brightness_slider = document.getElementById('brightness');
 const brightness_reset = document.getElementById('brightness-reset');
 const contrast_slider = document.getElementById('contrast');
 const contrast_reset = document.getElementById('contrast-reset');
+const tap_threshold = 10; // Pixel movement needed to become a drag rather than a tap
 
 // Set up canvas; blank until picture load
 const canvas = document.createElement("canvas");
@@ -228,15 +236,41 @@ function getPixelFromFullData(x, y) {
   ];
 }
 
-// On mouseover, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
-pic.addEventListener("mousemove", function(event) {
-  const rect = pic.getBoundingClientRect();
-  const x = event.clientX - Math.floor(rect.left);
-  const y = event.clientY - Math.floor(rect.top);
-  const px = Math.floor(x / zoom);
-  const py = Math.floor(y / zoom);
+// Triggered on mouse move or arrow keys
+function updateFocus() {
 
-  const pixelData = getPixelFromFullData(px, py);
+  // Make sure variables are clamped as needed
+  // Very messy but so be it
+  if (lastMouseX < 0) {
+    lastMouseX = 0;
+  }
+  else if (lastCrosshairX > fence.getBoundingClientRect().width) {
+    lastCrosshairX = fence.getBoundingClientRect().width;
+  }
+
+  if (lastCrosshairY < 0) {
+    lastCrosshairY = 0;
+  }
+  else if (lastCrosshairY > fence.getBoundingClientRect().height) {
+    lastCrosshairY = fence.getBoundingClientRect().height;
+  }
+
+  if (lastMouseX < 0) {
+    lastMouseX = 0;
+  }
+  else if (lastMouseX > pic.width) {
+    lastMouseX = pic.width;
+  }
+
+  if (lastMouseY < 0) {
+    lastMouseY = 0;
+  }
+  else if (lastMouseY > pic.height) {
+    lastMouseY = pic.height;
+  }
+
+  const pixelData = getPixelFromFullData(lastMouseX, lastMouseY);
+  console.log(lastMouseX);
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const [colourHex, colourName] = closestcolour(totalList, hex);
 
@@ -252,26 +286,44 @@ pic.addEventListener("mousemove", function(event) {
     const magRow = Math.floor(i / magSize) -1; // Row number in the magnifying glass
     const magCol = i % magSize -1; // Column number in the magnifying glass
 
-    let magPixelX = Math.floor((x - (magSize - 1)/2 + magCol)/zoom);
-    let magPixelY = Math.floor((y - (magSize - 1)/2 + magRow)/zoom);
+    let magPixelX = Math.floor((lastMouseX - (magSize - 1)/2 + magCol));
+    let magPixelY = Math.floor((lastMouseY - (magSize - 1)/2 + magRow));
 
     const magData = getPixelFromFullData(magPixelX, magPixelY);
     const magColour = rgbToHex(magData[0], magData[1], magData[2]);
     magPixels.item(i).style.backgroundColor = "#" + magColour;
   }
 
-  horizontalLine.style.top = `${y}px`;
-  verticalLine.style.left = `${x}px`;
-  pixelXY.textContent = `${Math.ceil(x * inv_zoom / zoom)} right, ${Math.ceil(y * inv_zoom / zoom)} down`;
-});
+  horizontalLine.style.top = `${lastCrosshairY - 1 + (imgbox.getBoundingClientRect().height - fence.getBoundingClientRect().height)/2}px`;
+  verticalLine.style.left = `${lastCrosshairX - 1 + (imgbox.getBoundingClientRect().width - fence.getBoundingClientRect().width)/2}px`;
+  pixelXY.textContent = `${Math.ceil(lastMouseX * inv_zoom / zoom)} right, ${Math.ceil(lastMouseY * inv_zoom / zoom)} down`;
+  pic_caption.textContent = `This pixel is approximately ${colourName}.`
+}
 
+// On mouseover or drag, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
+function moveOrDrag(x,y) {
+  const rect = pic.getBoundingClientRect();
+  const fence_rect = fence.getBoundingClientRect();
+  lastMouseX = x - Math.floor(rect.left);
+  lastMouseY = y - Math.floor(rect.top);
+  lastCrosshairX = x - Math.floor(fence_rect.left);
+  lastCrosshairY = y - Math.floor(fence_rect.top);
+  console.log(`${x} ${fence_rect.left}`);
+  updateFocus();
+}
 
 // Handles selecting pixels in the image
-pic.addEventListener('click', function(event) {
+function clickOrTap(tapX,tapY) {
   const rect = pic.getBoundingClientRect();
-  const x = event.clientX - Math.floor(rect.left);
-  const y = event.clientY - Math.floor(rect.top);
-  const pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
+  const x = tapX - Math.floor(rect.left);
+  const y = tapY - Math.floor(rect.top);
+  var pixelData;
+  if (zoom < 1 ) {
+    pixelData = ctx.getImageData(x, y, 1, 1).data;
+  }
+  else {
+    pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
+  } 
 
   const pixelList = document.getElementById('pixel-list');
   const pixel = document.createElement('li');
@@ -287,8 +339,59 @@ pic.addEventListener('click', function(event) {
   pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${hex} (${name})`));
   pixel.appendChild(colourSquare);
   pixelList.appendChild(pixel);
+
+  // Then also move to that point
+  moveOrDrag(tapX,tapY);
+}
+
+// Mouse listeners
+pic.addEventListener("mousemove", function(event) {
+  moveOrDrag(event.clientX, event.clientY);
 });
 
+pic.addEventListener('click', function(event) {
+  clickOrTap(event.clientX, event.clientY);
+});
+
+// Touch listener logic
+// Touch listeners
+pic.addEventListener('touchstart', e => {
+  e.preventDefault(); // block page scroll
+  const t = e.touches[0];
+  lastTouchX = t.clientX;
+  lastTouchY = t.clientY;
+  moved = false;
+}, { passive: false });
+
+pic.addEventListener('touchmove', e => {
+  e.preventDefault(); // block page scroll
+  const t = e.touches[0];
+  if (Math.abs(t.clientX - lastTouchX) > tap_threshold ||
+      Math.abs(t.clientY - lastTouchY) > tap_threshold) {
+    moved = true;
+  }
+  moveOrDrag(t.clientX, t.clientY);
+}, { passive: false });
+
+pic.addEventListener('touchend', e => {
+  e.preventDefault(); // block page scroll
+  if (!moved) {
+    // Treat as click/tap
+    clickOrTap(lastTouchX, lastTouchY);
+  }
+});
+
+// Pop-up function
+function popUp() {
+    var popup = document.getElementById("image-popup-text");
+  popup.classList.toggle("show");
+}
+
+// Pop-up event listener
+const imagePopup = document.getElementById("image-popup-icon");
+imagePopup.addEventListener('click', function () {
+  popUp();
+});
 
 ////////////////////////////////////////
 // Pixel info buttons
@@ -345,15 +448,15 @@ function pixelListToString(pixelList) {
 // New image buttons
 ////////////////////////////////////////
 
-// General refresh function
-function refreshImage() {
+// General crosshair refresh function
+function refreshCrosshairs() {
   // Lengthen the crosshairs but keep them narrow
-  horizontalLine.style.width = `${pic.width*zoom}px`;
-  verticalLine.style.height = `${pic.height*zoom}px`;
+  horizontalLine.style.width = `${fence.getBoundingClientRect().width}px`;
+  verticalLine.style.height = `${fence.getBoundingClientRect().height}px`;
 }
 
 // Handle image upload
-document.getElementById('image-upload').addEventListener('change', function(event) {
+document.getElementById('image-upload-button').addEventListener('change', function(event) {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
@@ -361,11 +464,13 @@ document.getElementById('image-upload').addEventListener('change', function(even
       pic.src = e.target.result;
       console.log(pic.width);
       original_pic.src = e.target.result; // Set the backup image to the uploaded one
-      refreshImage();
       updateImageData(); // Update the image data
+      refreshCrosshairs();
     };
     reader.readAsDataURL(file);
   }
+  window.scrollTo(0,0); // Scroll to top (shouldn't make a difference on PC, but useful on mobile)
+  adjustZoomToFit(); // Adjust zoom to fit new image
 });
   
 // Handle camera capture
@@ -377,7 +482,7 @@ const video = document.getElementById('camera-preview');
 cameraButton.addEventListener('click', async () => {
   // Prompt user for camera access
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: {facingMode : 'environment'} });
     video.srcObject = stream;
     video.style.display = 'block'; // Show video preview
     closeButton.style.display = 'block'; // Show close button
@@ -395,8 +500,9 @@ cameraButton.addEventListener('click', async () => {
         // Set captured image to the <img> element
         pic.src = canvas.toDataURL('image/png');
         original_pic.src = canvas.toDataURL('image/png'); // Set the backup image to the captured one
-        refreshImage();
         updateImageData(); // Update the image data with new image
+        refreshCrosshairs();
+        adjustZoomToFit();
 
         // Stop the video stream and hide the preview - doesn't seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
@@ -407,12 +513,13 @@ cameraButton.addEventListener('click', async () => {
   } catch (error) {
     console.error('Camera access was denied:', error);
   }
+  window.scrollTo(0,0);
 });
 
 closeButton.addEventListener('click', async () => {
 // Prompt user for camera access
-video.style.display = 'none'; // Show video preview
-closeButton.style.display = 'none'; // Show close button
+video.style.display = 'none'; // Hide video preview
+closeButton.style.display = 'none'; // Hide close button
 cameraButton.textContent = 'Take Photo';
 });
 
@@ -439,84 +546,62 @@ elabCheck.addEventListener('change', function() {
   elabChanger();
 });
 
-// Listener for zoom functionality
-document.querySelectorAll('input[name="zoom"]').forEach(radio => {
-  radio.addEventListener('change', function () {
-    
-    // Gets selected zoom value from radio button...
-    const selected_zoom = parseFloat(this.value);
-
-    // ...and calls the changeZoom function with it
-    changeZoom(selected_zoom);
-  });
+// Listener for people pressing the zoom in or zoom out buttons
+document.getElementById('zoom-in').addEventListener('click', function() {
+  changeZoom(zoom * 2);
+});
+document.getElementById('zoom-out').addEventListener('click', function() {
+  changeZoom(zoom / 2);
 });
 
 // Function to change zoom
 function changeZoom(selected_zoom) {
-  if (selected_zoom < 1) { // Zooming out
-    zoom = 1;
-    inv_zoom = 1/selected_zoom; // E.g. will be 2 for 0.5x zoom
-    downsampleImage(pic,original_pic,inv_zoom);
-  }
-  else {
-    pic.src = original_pic.src; // Reset to original image
-    zoom = selected_zoom;
-    inv_zoom = 1;
-  }
+  // selected_zoom can be <1 (zoom out) or >=1 (zoom in)
+  zoom = selected_zoom;
 
-  frame.style.transform = `scale(${zoom})`;
-  frame.parentElement.scrollTop = relativeY*zoom;
-  frame.parentElement.scrollLeft = relativeX*zoom;
-  refreshImage();
+  redrawCanvas(original_pic, zoom);
+
+  frame.parentElement.scrollTop = relativeY * zoom;
+  frame.parentElement.scrollLeft = relativeX * zoom;
+  refreshCrosshairs();
+
+  // Update zoom level display
+  document.getElementById('zoom-level').textContent = `x${zoom}`;
 }
 
-// Shrinks image for zoom-out functionality
-function downsampleImage(outElement, inElement, zoomout) {
-  const w = inElement.naturalWidth;
-  const h = inElement.naturalHeight;
 
-  const inputCanvas = document.createElement('canvas');
-  const ctx = inputCanvas.getContext('2d');
-  inputCanvas.width = w;
-  inputCanvas.height = h;
-  ctx.drawImage(inElement, 0, 0);
+// Redraws canvas on zoom change
+function redrawCanvas(imgElement, zoomFactor) {
+  const w = imgElement.naturalWidth;
+  const h = imgElement.naturalHeight;
 
-  const inputData = ctx.getImageData(0, 0, w, h).data;
+  // Canvas size is scaled by zoom factor (can be <1 or >1)
+  canvas.width  = Math.max(1, Math.round(w * zoomFactor));
+  canvas.height = Math.max(1, Math.round(h * zoomFactor));
 
-  const outW = Math.floor(w / zoomout);
-  const outH = Math.floor(h / zoomout);
+  ctx.imageSmoothingEnabled = false; // nearest-neighbour always
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const outputCanvas = document.createElement('canvas');
-  const outputCtx = outputCanvas.getContext('2d');
-  outputCanvas.width = outW;
-  outputCanvas.height = outH;
-  const outputImageData = outputCtx.createImageData(outW, outH);
-  const outputData = outputImageData.data;
+  ctx.drawImage(
+    imgElement,
+    0, 0, w, h,                   // source
+    0, 0, canvas.width, canvas.height // destination
+  );
 
-  for (let y = 0; y < outH; y++) {
-    for (let x = 0; x < outW; x++) {
-      const srcX = x * zoomout;
-      const srcY = y * zoomout;
-      const srcIndex = (srcY * w + srcX) * 4;
-      const dstIndex = (y * outW + x) * 4;
+  // Update the visible <img>
+  pic.src = canvas.toDataURL();
 
-      for (let i = 0; i < 4; i++) {
-        outputData[dstIndex + i] = inputData[srcIndex + i]; // copy RGBA
-      }
-    }
-  }
-
-  outputCtx.putImageData(outputImageData, 0, 0);
-  outElement.src = outputCanvas.toDataURL();
+  updateImageData(); // keeps fullData in sync
 }
+
 
 ////////////////////////////////////////
 // Image/canvas setup
 ////////////////////////////////////////
 
 function updateImageData() {
-  fullImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  fullData = fullImageData.data;
+fullImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+fullData = fullImageData.data;
 }
 
 ////////////////////////////////////////
@@ -525,8 +610,8 @@ function updateImageData() {
 
 function debug(onOff) {
   debugMode = true;
-  // Find the stylesheet (in this case the first/only one)
-  const sheet = document.styleSheets[0];
+  // Find the stylesheet (in this case the second one)
+  const sheet = document.styleSheets[1];
 
   let debugClass; // Will become the debug CSS class
 
@@ -550,7 +635,7 @@ function debug(onOff) {
   }
 }
 
-// Listens for keyboard input to detect debug mode activation
+// Listens for keyboard input to detect debug mode activation and move image
 
 let inputSequence = [];
 const debugSequence = ['d', 'e', 'b', 'u', 'g']; // The sequence to trigger debug mode
@@ -558,7 +643,29 @@ const hideDebugSequence = ['r', 'e', 's', 'e','t']; // The sequence to hide debu
 
 document.addEventListener('keydown', function(event) {
     inputSequence.push(event.key);
-    console.log(event.key); // Log the key pressed
+
+    // First, check for image movement
+    const step = 1;
+    switch (event.key) {
+      case 'ArrowUp':
+        event.preventDefault(); // block page scroll
+        scrollImage("y",false);
+        break;
+      case 'ArrowDown':
+        event.preventDefault(); // block page scroll
+        scrollImage("y",true);
+        break;
+      case 'ArrowLeft':
+        event.preventDefault(); // block page scroll
+        scrollImage("x",false);
+        break;
+      case 'ArrowRight':
+        event.preventDefault(); // block page scroll
+        scrollImage("x",true);
+        break;
+    }
+
+    // Then check for hidden codes
 
     if (inputSequence.length > debugSequence.length) {
         inputSequence.shift(); // Remove the oldest input if it exceeds the target length
@@ -576,20 +683,70 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+// Handles moving either the scrollbars or the crosshairs
+// Takes string of either 'x' or 'y' and directional bool (true for down/right, false for up/left) plus optional step distance
+function scrollImage(axis, increment_up, step=1) {
+  let dir = step;
+  if (!increment_up) {
+    dir *= -1;
+  }
+
+  let scrollName;
+  if (axis == 'x') {
+    scrollName = 'scrollLeft';
+    lastMouseX += dir;
+  }
+  else {
+    scrollName = 'scrollTop';
+    lastMouseY += dir;
+  }
+
+  const before_scroll = frame.parentElement[scrollName]; // Number - should get val not ref
+  frame.parentElement[scrollName] += dir;
+
+  if (frame.parentElement[scrollName] == before_scroll) { // No change - scrolling as far as you can!
+    if (axis == 'x') {
+    lastCrosshairX += dir;
+    }
+    else {
+      lastCrosshairY += dir;
+    }
+  }
+
+  updateFocus();
+}
+
 // Runs it initially
 if (!(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) { // Real
   console.log("Removing debug features");
   debug(false); // Turn off debug mode
+}
+else { // It is in debug mode
+  debug(true);
+  document.documentElement.style.background = '#222222';
 }
 
 ////////////////////////////////////////
 // Initisalisation
 ////////////////////////////////////////
 
+// Bind/set up arrow pad
+function initArrowPad() {
+  document.getElementById("up").addEventListener("click", () => scrollImage("y", false, 1));
+  document.getElementById("down").addEventListener("click", () => scrollImage("y", true, 1));
+  document.getElementById("left").addEventListener("click", () => scrollImage("x", false, 1));
+  document.getElementById("right").addEventListener("click", () => scrollImage("x", true, 1));
+
+  document.getElementById("fast-up").addEventListener("click", () => scrollImage("y", false, 5));
+  document.getElementById("fast-down").addEventListener("click", () => scrollImage("y", true, 5));
+  document.getElementById("fast-left").addEventListener("click", () => scrollImage("x", false, 5));
+  document.getElementById("fast-right").addEventListener("click", () => scrollImage("x", true, 5));
+}
+
 // Function to call on page load
 function init() {
-  // Check ELAB mode by default (and call change function)
-  elabCheck.checked = true;
+  // Uncheck ELAB mode by default (and call change function)
+  elabCheck.checked = false;
   elabChanger();
   // Do the same for brightness
   brightness_slider.value = 50;
@@ -598,10 +755,25 @@ function init() {
   contrast_slider.value = 50;
   changeContrast();
 
+  // Adjust zoom to fit image in frame
+  adjustZoomToFit();
+
+  // Set up magnifying glass
   magZoom();
 
-  // Make sure the correct zoom radio button is checked
-  document.getElementById('zoom-1').click();
+  // Set up arrow pad
+  initArrowPad();
+
+  // Should be called on picture load; duplicating here to make sure it happens the first time as well
+  canvas.width = pic.width;
+  canvas.height = pic.height;
+  ctx.drawImage(pic, 0, 0, pic.width, pic.height);
+  updateImageData(); // Initialise the data
+
+  // Start off the crosshair in the middle
+  refreshCrosshairs();
+  horizontalLine.style.top = `${Math.floor((fence.height)/2)}px`;
+  verticalLine.style.left = `${Math.floor((fence.width)/2)}px`;
 };
 
 // Called when picture is first loaded
@@ -610,4 +782,52 @@ pic.onload = function () {
   canvas.height = pic.height;
   ctx.drawImage(pic, 0, 0, pic.width, pic.height);
   updateImageData(); // Initialise the data
+
+  // Start off the crosshair in the middle
+  refreshCrosshairs();
+  horizontalLine.style.top = `${Math.floor((fence.height)/2)}px`;
+  verticalLine.style.left = `${Math.floor((fence.width)/2)}px`;
 };
+
+// When a picture is loaded, adjust zoom to whatever level would best fit it in the frame
+function adjustZoomToFit() {
+  // Calculate best fit zoom
+  const frameWidth = frame.getBoundingClientRect().width;
+  const frameHeight = frame.getBoundingClientRect().height;
+  // Zooms must be powers of two (1, 2, 0.5, 0.25, etc)
+  const initialWidthRatio = frameWidth / pic.naturalWidth;
+  const initialHeightRatio = frameHeight / pic.naturalHeight;
+  const widthRatio = Math.pow(2, Math.floor(Math.log2(initialWidthRatio)));
+  const heightRatio = Math.pow(2, Math.floor(Math.log2(initialHeightRatio)));
+  const bestFitZoom = Math.min(widthRatio, heightRatio, 1); // Don't exceed 1x zoom
+  changeZoom(bestFitZoom);
+  console.log(`Best fit zoom: ${bestFitZoom}`);
+};
+
+// See if it's a touch device and offer onscreen options if so
+function isTouchDevice() {
+  return (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0
+  );
+}
+
+if (isTouchDevice()) {
+  console.log("This device supports touch input.");
+  // Implement touch-specific logic
+  arrowpad.style.display = 'block';
+
+} else {
+  console.log("This device does not appear to support touch input.");
+  // Implement non-touch-specific logic
+}
+
+// Detect window resize
+window.addEventListener("resize", function() {
+  // Code to execute when the window is resized
+  console.log("Window resized!");
+  // Example: Get and display current window dimensions
+  updateFocus();
+  refreshCrosshairs();
+});

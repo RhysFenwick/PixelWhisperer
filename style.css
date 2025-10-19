@@ -1,231 +1,149 @@
-/**/
-/* Page-wide properties */
-/**/
 :root {
-    --main-accent: #BE830E;
+  --main-accent: #BE830E;
+  --bs-border-color:var(--main-accent);
 }
 
-
-p, h1, h2, h3, h4, button, label {
-    text-align: center;
-    font-family: sans-serif;
-    margin: 0.5em;
+html {
+  background-color: #555;
 }
-
-.tooltip {
-    position: relative;
-    display: inline-block;
-}
-
-.tooltiptext {
-    visibility: hidden;
-    width: 120px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    padding: 5px 0;
-    border-radius: 6px;
-   
-    /* Position the tooltip text - see examples below! */
-    position: absolute;
-    z-index: 1;
-  }
-
-label:hover .tooltiptext {
-    visibility: visible;
-}
-
-button:active {
-    background-color: var(--main-accent);
-    border-radius: 5px;
-}
-
-ol {
-    font-family: sans-serif;
-}
-
-li {
-    margin-top: 0.5em;
-}
-
-.box {
-    padding: 1%;
-    margin: 1%;
-    border: 2px solid;
-    border-color: var(--main-accent);
-    border-radius: 5px;
-    height: fit-content;
-    width: fit-content;
-}
-
-.rgb-bar {
-    width: 90%;
-    height: 12px;
-    padding-bottom: 5px;
-}
-
-.rgb-amount {
-    width: 50%;
-    height: 100%;
-}
-
-footer {
-    font-size: small;
-    text-align: center;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-}
-
-/**/
-/* Layout */
-/**/
-
-#page-contents {
-    display: flex;
-}
-
-/* Left column */
-
-#focus-image {
-    max-width: 45%;
-    max-height: 60%;
-}
-
-#img-box {
-    max-width: 100%;
-    height: 70vh;
-    position: relative;
-    overflow: auto;
-}
-
-#picker-image {
-    padding: 0;
-    margin: 0;
-}
-
-#picture-frame {
-    height: auto;
-    width: auto;
-    padding: 0;
-    margin: 0;
-    transform-origin: top left;
-}
-
-.image-options{
-    display: flex;
-    justify-content: center;
-    border: 0;
-    padding: 0;
-    margin: 0;
-}
-
-.zoom-options {
-    display: flex;
-    justify-content: center;
-    border: 0;
-    padding: 0;
-    margin: 0;
-}
-
-input[name="zoom"] {
-    padding: 0;
-    margin: 0;
-}
-
-.zoom-labels {
-    padding: 0;
-    margin-left: 1em;
-    margin-right: 0.2em;
-}
-
-/* Middle column */
-
-#info {
-    width: 15%;
-    height: 100%;
-}
-
-#colour-info {
-    height: 50%;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-#mag-glass {
-    width: 100%;
-    aspect-ratio: 1/1;
-    display: grid;
-}
-
-.mag-pixel {
-    border: 1px lightgray solid;
-}
-
-#mag-res {
-    color: var(--main-accent);
-    outline: none;
-}
-
-/* Second From Right column */
-
-#image-upload {
-    width: fit-content;
-    max-width: 20%;
-}
-
-/* Furthest Right Column */
-
-#pixel-stats {
-    width: 15%;
-}
-
-#pixel-list {
-    max-height: 60vh;
-    overflow-y: scroll;
-}
-
-.colour-square {
-    width: 20px;
-    height: 20px;
-}
-
-/* Crosshair */
 
 .crosshair-line {
-    position: absolute;
-    background-color: black;
-    pointer-events: none; /* Prevents the lines from interfering with mouse events */
-    z-index: 10; /* Ensure the lines are on top of the image */
+  position: absolute;
+  background-color: black;
+  pointer-events: none;
+  z-index: 10;
 }
 
 #horizontal-line {
-    height: 1px;
-    width: 100%;
+  height: 1px;
+  width: 100%;
 }
 
 #vertical-line {
-    width: 1px;
-    height: 100%;
-    top: 0; /* Ensure the vertical line starts from the top */
+  width: 1px;
+  height: 100%;
+  top: 0px;
 }
 
-/**/
-/* Initial setup - changed programmatically*/
-/**/
+#image-fence {
+  display: inline-block;
+  max-height: 80vh;
+  max-width: 50vw;
+}
+
+#img-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#picker-image {
+  image-rendering: crisp-edges;
+}
+
+
+.rgb-bar {
+  width: 100%;
+  height: 12px;
+  background-color: #e9ecef;
+}
+
+.rgb-amount {
+  height: 100%;
+}
+
+#mag-glass {
+  aspect-ratio: 1/1;
+  display: grid;
+}
+
+.mag-pixel {
+  border: 1px solid lightgray;
+}
 
 #camera-preview {
-    display: none; 
-    max-width: 100%;
+  display: none;
 }
 
-#camera-close-button {
-    display: none;
-}
-
-/* Debug class - changed programatically to "display: none" on page load */
 .debug {
-
+    /* This is filled programatically */
 }
+
+#arrowpad {
+  display: none;
+}
+
+.border {
+    border-color: var(--main-accent);
+}
+
+#zoom-level-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+}
+
+/* Target small screens only */
+@media (max-width: 992px) {   /* matches your Bootstrap col-lg breakpoint */
+  #img-box,
+  #image-fence,
+  #picture-frame {
+    width: 90vw;      /* expand viewport up to 90% of screen width */
+    max-width: 90vw;
+  }
+}
+
+/* Pop-up CSS */
+ /* Popup container */
+.popup {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* The actual popup (appears on top) */
+.popup .popuptext {
+  visibility: hidden;
+  width: 160px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -80px;
+}
+
+/* Popup arrow */
+.popup .popuptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Toggle this class when clicking on the popup container (hide and show the popup) */
+.popup .show {
+  visibility: visible;
+  -webkit-animation: fadeIn 1s;
+  animation: fadeIn 1s
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
+} 
