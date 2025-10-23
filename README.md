@@ -1,5 +1,5 @@
 # Pixel Whisperer
-An accessibility-focused web app to help colourblind users interpret visual data. Allows user to upload an image, mouse over a pixel, and receive a label for that colour. It uses the [ISCC-NBS Colour System](https://www.munsellcolorscienceforpainters.com/ISCCNBS/ISCCNBSSystem.html) for colour labels.
+An accessibility-focused web app to help colourblind users interpret visual data. Allows user to upload an image, mouse over a pixel, and receive a label for that colour. It uses the [ISCC-NBS Colour System](https://www.munsellcolorscienceforpainters.com/ISCCNBS/ISCCNBSSystem.html) for colour labels, with some additional greyscale values added.
 Under development by Rhys Fenwick, 2025, as part of an Australian National University accessibility project.
 
 ## License
@@ -42,6 +42,7 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 - Picture shouldn't resize with window resize!! (done)
 - Pixel selection doesn't update on scroll
 - Crosshair clamping doesn't handle overall window scrolling well
+- Deal with transparency
 
 
 

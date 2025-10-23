@@ -343,11 +343,11 @@
     "Very dark purplish red":["431432"],
     "Light grayish purplish red":["B2879B"],
     "Grayish purplish red":["945C73"],
-    "White":["E7E1E9"],
-    "Light gray":["BDB7BF"],
-    "Medium gray":["8A8489"],
-    "Dark gray":["585458"],
-    "Black":["2B292B"],
+    "White":["E7E1E9", "FFFFFF","E0E0E0"],
+    "Light gray":["BDB7BF", "D3D3D3", "C0C0C0"],
+    "Medium gray":["8A8489", "A0A0A0"],
+    "Dark gray":["585458","606060", "404040"],
+    "Black":["2B292B", "000000", "101010"],
     "Pink":["E68697"],
     "Red":["B92842"],
     "Orange":["DC7D34"],
@@ -358,6 +358,6 @@
     "Green":["4FBF9A"],
     "Blue":["3B74C0"],
     "Purple":["AC4AC3"],
-    "Gray":["938E93"]
+    "Gray":["938E93", "808080", "909090"]
   }
 }

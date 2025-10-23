@@ -283,8 +283,8 @@ function updateFocus() {
 
   
   for (let i = 0; i < magPixels.length; i++) {
-    const magRow = Math.floor(i / magSize) -1; // Row number in the magnifying glass
-    const magCol = i % magSize -1; // Column number in the magnifying glass
+    const magRow = Math.floor(i / magSize); // Row number in the magnifying glass
+    const magCol = i % magSize; // Column number in the magnifying glass
 
     let magPixelX = Math.floor((lastMouseX - (magSize - 1)/2 + magCol));
     let magPixelY = Math.floor((lastMouseY - (magSize - 1)/2 + magRow));
