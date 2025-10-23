@@ -44,7 +44,7 @@ fetch('colours.json')
   .then(data => {
     colourList = convertHexList(data.colourList);
     eLabList = convertHexList(data.elabList);
-    totalList = eLabList; // Default to ELAB list
+    totalList = colourList; // Default to full list
     // At this point totalList has the format { colourName: [ { hex: "#FFFFFF", rgb: { r: 255, g: 255, b: 255 } }, ... ], ... }
 
     // Now the global vars are populated and accessible
