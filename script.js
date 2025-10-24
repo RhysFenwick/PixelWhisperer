@@ -12,6 +12,7 @@ let contrast = 50; // Default contrast (no change)
 let lastMouseX = 0, lastMouseY = 0; // Last known mouse coords (for when scrolling the image without using a mouse)
 let lastCrosshairX = 0, lastCrosshairY = 0; // Similar to lastMouseX/Y but for the crosshair (i.e. relative to viewport not image)
 let lastTouchX = 0, lastTouchY = 0; // Similar to lastMouse but for touch
+let isZoomAdjusted = false; // Whether zoom has been auto-adjusted yet
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -270,7 +271,6 @@ function updateFocus() {
   }
 
   const pixelData = getPixelFromFullData(lastMouseX, lastMouseY);
-  console.log(lastMouseX);
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const [colourHex, colourName] = closestcolour(totalList, hex);
 
@@ -308,7 +308,6 @@ function moveOrDrag(x,y) {
   lastMouseY = y - Math.floor(rect.top);
   lastCrosshairX = x - Math.floor(fence_rect.left);
   lastCrosshairY = y - Math.floor(fence_rect.top);
-  console.log(`${x} ${fence_rect.left}`);
   updateFocus();
 }
 
@@ -461,16 +460,16 @@ document.getElementById('image-upload-button').addEventListener('change', functi
   if (file) {
     const reader = new FileReader();
     reader.onload = function(e) {
+      isZoomAdjusted = false; // New image, so reset zoom adjust flag
       pic.src = e.target.result;
-      console.log(pic.width);
       original_pic.src = e.target.result; // Set the backup image to the uploaded one
       updateImageData(); // Update the image data
+
       refreshCrosshairs();
     };
     reader.readAsDataURL(file);
   }
   window.scrollTo(0,0); // Scroll to top (shouldn't make a difference on PC, but useful on mobile)
-  adjustZoomToFit(); // Adjust zoom to fit new image
 });
   
 // Handle camera capture
@@ -490,6 +489,7 @@ cameraButton.addEventListener('click', async () => {
 
     cameraButton.onclick = () => {
       if (closeButton.style.display == 'block') { // As a proxy for "is the camera currently active"
+        isZoomAdjusted = false; // New image, so reset zoom adjust flag
         // Create a canvas to capture the current frame
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
@@ -502,7 +502,6 @@ cameraButton.addEventListener('click', async () => {
         original_pic.src = canvas.toDataURL('image/png'); // Set the backup image to the captured one
         updateImageData(); // Update the image data with new image
         refreshCrosshairs();
-        adjustZoomToFit();
 
         // Stop the video stream and hide the preview - doesn't seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
@@ -782,6 +781,9 @@ pic.onload = function () {
   canvas.height = pic.height;
   ctx.drawImage(pic, 0, 0, pic.width, pic.height);
   updateImageData(); // Initialise the data
+  if (!isZoomAdjusted) {
+    adjustZoomToFit();
+  }
 
   // Start off the crosshair in the middle
   refreshCrosshairs();
@@ -791,12 +793,15 @@ pic.onload = function () {
 
 // When a picture is loaded, adjust zoom to whatever level would best fit it in the frame
 function adjustZoomToFit() {
+  isZoomAdjusted = true;
   // Calculate best fit zoom
   const frameWidth = frame.getBoundingClientRect().width;
   const frameHeight = frame.getBoundingClientRect().height;
   // Zooms must be powers of two (1, 2, 0.5, 0.25, etc)
-  const initialWidthRatio = frameWidth / pic.naturalWidth;
-  const initialHeightRatio = frameHeight / pic.naturalHeight;
+  const initialWidthRatio = frameWidth / pic.width;
+  const initialHeightRatio = frameHeight / pic.height;
+  console.log(`Initial dimensions: ${frameWidth} ${frameHeight}`);
+  console.log(`Image dimensions: ${pic.width} ${pic.height}`);
   const widthRatio = Math.pow(2, Math.floor(Math.log2(initialWidthRatio)));
   const heightRatio = Math.pow(2, Math.floor(Math.log2(initialHeightRatio)));
   const bestFitZoom = Math.min(widthRatio, heightRatio, 1); // Don't exceed 1x zoom
