@@ -529,12 +529,12 @@ const elabCheck = document.getElementById('elab-mode');
 function elabChanger() {
   if (elabCheck.checked) {
     // Make ELAB mode
-    document.getElementById('page-heading').textContent = "Pixel Whisperer - Turn colours into words.";
+    document.getElementById('page-heading').textContent = "Pixel Whisperer (ELAB Mode)";
     totalList = eLabList
   }
   else {
     // Make normal
-    document.getElementById('page-heading').textContent = "Pixel Whisperer - Turn picture colours into words.";
+    document.getElementById('page-heading').textContent = "Pixel Whisperer";
     totalList = colourList
   }
 }
