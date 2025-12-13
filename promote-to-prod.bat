@@ -33,13 +33,13 @@ if not exist temp mkdir temp
 
 REM Process index.html - update paths and remove (DEV) indicators
 echo [1/3] Processing index.html...
-powershell -Command "(Get-Content 'dev\index.html') -replace '\.\./img/', 'img/' -replace '\.\./hashscript\.js', 'hashscript.js' -replace 'Pixel Whisperer \(DEV\)', 'Pixel Whisperer' | Set-Content 'temp\index.html'"
+powershell -Command "(Get-Content 'dev\index.html') -replace '\.\./img/', 'img/' -replace '\.\./hashscript\.js', 'hashscript.js' -replace '\./script\.js', 'script.js' -replace '\./style\.css', 'style.css' -replace 'Pixel Whisperer \(DEV[^\)]*\)', 'Pixel Whisperer' -replace '\?v=[0-9.]+', '' | Set-Content 'temp\index.html'"
 copy /Y temp\index.html index.html > nul
 echo       - Copied and updated paths
 
-REM Process script.js - update paths
+REM Process script.js - update paths and remove DEV markers
 echo [2/3] Processing script.js...
-powershell -Command "(Get-Content 'dev\script.js') -replace '\.\./colours\.json', 'colours.json' | Set-Content 'temp\script.js'"
+powershell -Command "(Get-Content 'dev\script.js') -replace '\.\./colours\.json', 'colours.json' -replace 'Pixel Whisperer \(DEV[^\)]*\)', 'Pixel Whisperer' -replace '// \*\*\* DEV VERSION.*\n', '' -replace 'console\.log\(''.* DEV SCRIPT LOADED.*''\);?\n?', '' | Set-Content 'temp\script.js'"
 copy /Y temp\script.js script.js > nul
 echo       - Copied and updated paths
 

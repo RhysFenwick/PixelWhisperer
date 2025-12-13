@@ -1,6 +1,13 @@
+// *** DEV VERSION WITH AVERAGE COLOR FEATURE ***
+console.log('🟢🟢🟢 DEV SCRIPT LOADED - AVERAGE COLOR FEATURE 🟢🟢🟢');
+
 ////////////////////////////////////////
 // Declarations and set-up
 ////////////////////////////////////////
+
+console.log('[DEBUG] ========================================');
+console.log('[DEBUG] SCRIPT VERSION: Average Color Feature - v1.4');
+console.log('[DEBUG] ========================================');
 
 let colourList = {}, eLabList = {}, totalList = [];
 let zoom = 1, inv_zoom = 1;
@@ -13,6 +20,7 @@ let lastMouseX = 0, lastMouseY = 0; // Last known mouse coords (for when scrolli
 let lastCrosshairX = 0, lastCrosshairY = 0; // Similar to lastMouseX/Y but for the crosshair (i.e. relative to viewport not image)
 let lastTouchX = 0, lastTouchY = 0; // Similar to lastMouse but for touch
 let isZoomAdjusted = false; // Whether zoom has been auto-adjusted yet
+let averageMode = false; // Whether to use 3x3 average colour sampling
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -237,6 +245,42 @@ function getPixelFromFullData(x, y) {
   ];
 }
 
+// Gets average colour of 3x3 grid centered on x,y
+// Handles edge/corner cases by averaging only available pixels
+function getAverageColor(x, y) {
+  console.log(`[DEBUG] getAverageColor called at (${x}, ${y})`);
+  let totalR = 0, totalG = 0, totalB = 0;
+  let count = 0;
+
+  // Sample 3x3 grid centered on x,y
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const sampleX = x + dx;
+      const sampleY = y + dy;
+
+      // Check if pixel is within bounds
+      if (sampleX >= 0 && sampleX < canvas.width &&
+          sampleY >= 0 && sampleY < canvas.height) {
+        const pixelData = getPixelFromFullData(sampleX, sampleY);
+        totalR += pixelData[0];
+        totalG += pixelData[1];
+        totalB += pixelData[2];
+        count++;
+      }
+    }
+  }
+
+  // Return average RGB values
+  const avgColor = [
+    Math.round(totalR / count),
+    Math.round(totalG / count),
+    Math.round(totalB / count),
+    255 // Alpha (fully opaque)
+  ];
+  console.log(`[DEBUG] getAverageColor result: RGB(${avgColor[0]}, ${avgColor[1]}, ${avgColor[2]}) from ${count} pixels`);
+  return avgColor;
+}
+
 // Triggered on mouse move or arrow keys
 function updateFocus() {
 
@@ -270,9 +314,14 @@ function updateFocus() {
     lastMouseY = pic.height;
   }
 
-  const pixelData = getPixelFromFullData(lastMouseX, lastMouseY);
+  // Use average colour if enabled, otherwise single pixel
+  console.log(`[DEBUG] updateFocus - averageMode: ${averageMode}, position: (${lastMouseX}, ${lastMouseY})`);
+  const pixelData = averageMode
+    ? getAverageColor(lastMouseX, lastMouseY)
+    : getPixelFromFullData(lastMouseX, lastMouseY);
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const [colourHex, colourName] = closestcolour(totalList, hex);
+  console.log(`[DEBUG] updateFocus - Mode: ${averageMode ? 'AVERAGE' : 'SINGLE'}, Hex: ${hex}, Name: ${colourName}`);
 
   document.getElementById("colour-name").textContent = `${colourHex.hex} - ${colourName}`;
   document.getElementById("colour-hex").textContent = `${hex}`;
@@ -313,16 +362,27 @@ function moveOrDrag(x,y) {
 
 // Handles selecting pixels in the image
 function clickOrTap(tapX,tapY) {
+  console.log(`[DEBUG] clickOrTap called - averageMode: ${averageMode}`);
   const rect = pic.getBoundingClientRect();
   const x = tapX - Math.floor(rect.left);
   const y = tapY - Math.floor(rect.top);
-  var pixelData;
-  if (zoom < 1 ) {
-    pixelData = ctx.getImageData(x, y, 1, 1).data;
+
+  // Calculate canvas coordinates based on zoom
+  let canvasX, canvasY;
+  if (zoom < 1) {
+    canvasX = x;
+    canvasY = y;
+  } else {
+    canvasX = Math.floor(x / zoom);
+    canvasY = Math.floor(y / zoom);
   }
-  else {
-    pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
-  } 
+  console.log(`[DEBUG] clickOrTap - canvas coordinates: (${canvasX}, ${canvasY}), zoom: ${zoom}`);
+
+  // Use average colour if enabled, otherwise single pixel
+  const pixelData = averageMode
+    ? getAverageColor(canvasX, canvasY)
+    : getPixelFromFullData(canvasX, canvasY);
+  console.log(`[DEBUG] clickOrTap - Using ${averageMode ? 'AVERAGE' : 'SINGLE'} mode, RGB: (${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`);
 
   const pixelList = document.getElementById('pixel-list');
   const pixel = document.createElement('li');
@@ -330,12 +390,19 @@ function clickOrTap(tapX,tapY) {
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const name = closestcolour(totalList, hex)[1];
 
+  // Add average mode indicator if applicable
+  const modeIndicator = averageMode ? ' [AVG]' : '';
+
   // Add colour square to pixel list
   const colourSquare = document.createElement('div');
   colourSquare.className = 'colour-square';
   colourSquare.style.backgroundColor = `#${hex}`;
 
-  pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${hex} (${name})`));
+  // Trim coordinates to remove any extra whitespace
+  const xCoord = pixel_xy[0].trim();
+  const yCoord = pixel_xy[2].trim();
+
+  pixel.appendChild(document.createTextNode(`${xCoord}, ${yCoord} - ${hex} (${name})${modeIndicator}`));
   pixel.appendChild(colourSquare);
   pixelList.appendChild(pixel);
 
@@ -423,15 +490,23 @@ document.getElementById('export-button').addEventListener('click', function() {
 // Turns the pixel-list into a well-formatted CSV
 function pixelListToCSV(pixelList) {
   const rows = Array.from(pixelList.children).map(pixel => {
-    const line = pixel.textContent.trim(); // "472, 211 - D7D243 - Dark Khaki"
+    const line = pixel.textContent.trim(); // "472, 211 - D7D243 (Dark Khaki) [AVG]" or "472, 211 - D7D243 (Dark Khaki)"
     const [coordPart, colour] = line.split(' - ');
     const [x, y] = coordPart.split(',').map(n => n.trim());
-    const [hex, name] = colour.split("(");
-    return `${x},${y},${hex.trim()},${name.trim().slice(0,-1)}`;
+
+    // Check if this is an averaged pixel
+    const isAverage = colour.includes('[AVG]');
+    const colourWithoutAvg = colour.replace(' [AVG]', '');
+
+    const [hex, nameWithParen] = colourWithoutAvg.split('(');
+    const name = nameWithParen.trim().slice(0, -1); // Remove closing parenthesis
+
+    const avgIndicator = isAverage ? 'Yes' : 'No';
+    return `${x},${y},${hex.trim()},${name},${avgIndicator}`;
   });
 
   // Add header
-  rows.unshift('X Coord,Y Coord,Hex Code,Colour Name');
+  rows.unshift('X Coord,Y Coord,Hex Code,Colour Name,Averaged (3x3)');
 
   return rows.join('\n');
 }
@@ -529,12 +604,12 @@ const elabCheck = document.getElementById('elab-mode');
 function elabChanger() {
   if (elabCheck.checked) {
     // Make ELAB mode
-    document.getElementById('page-heading').textContent = "Pixel Whisperer (ELAB Mode)";
+    document.getElementById('page-heading').textContent = "Pixel Whisperer (DEV - ELAB Mode)";
     totalList = eLabList
   }
   else {
     // Make normal
-    document.getElementById('page-heading').textContent = "Pixel Whisperer";
+    document.getElementById('page-heading').textContent = "Pixel Whisperer (DEV)";
     totalList = colourList
   }
 }
@@ -544,6 +619,9 @@ function elabChanger() {
 elabCheck.addEventListener('change', function() {
   elabChanger();
 });
+
+// Average mode checkbox toggle (will be set up in init())
+let averageCheck;
 
 // Listener for people pressing the zoom in or zoom out buttons
 document.getElementById('zoom-in').addEventListener('click', function() {
@@ -747,6 +825,27 @@ function init() {
   // Uncheck ELAB mode by default (and call change function)
   elabCheck.checked = false;
   elabChanger();
+
+  // Set up average mode checkbox
+  averageCheck = document.getElementById('average-mode');
+  console.log('[DEBUG] init() - Average mode checkbox element:', averageCheck);
+
+  if (averageCheck) {
+    // Uncheck average mode by default
+    averageCheck.checked = false;
+    averageMode = false;
+    console.log('[DEBUG] init() - Average mode initialized:', averageMode);
+
+    // Add event listener for average mode checkbox
+    averageCheck.addEventListener('change', function() {
+      averageMode = this.checked;
+      console.log(`[DEBUG] Average mode toggled: ${averageMode ? 'ENABLED' : 'DISABLED'}`);
+      updateFocus(); // Update display immediately to reflect the change
+    });
+    console.log('[DEBUG] Average mode event listener attached');
+  } else {
+    console.error('[DEBUG] ERROR: Average mode checkbox not found!');
+  }
   // Do the same for brightness
   brightness_slider.value = 50;
   changeBrightness();

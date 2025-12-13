@@ -118,13 +118,16 @@ Production files in root use direct relative paths:
 
 **Testing new features:**
 1. Make changes in `/dev` folder files
-2. Test locally at `file:///path/to/dev/index.html` or `localhost/dev/`
+2. Test locally at `file:///path/to/dev/index.html` or `localhost/dev/` (note the trailing slash!)
 3. When satisfied, run `promote-to-prod.bat` to copy changes to production
 4. The script automatically updates paths and removes (DEV) indicators
 5. Test production version
 6. Commit and push changes to deploy to GitHub Pages
 
-**Important:** Always test in `/dev` first. The promotion script will ask for confirmation before overwriting production files.
+**Important Notes:**
+- Always test in `/dev/` first. The promotion script will ask for confirmation before overwriting production files.
+- **CRITICAL: Always use `/dev/` with the trailing slash** - accessing without the slash will not load the dev version correctly
+- Bookmark `http://localhost:5500/dev/` or your server URL with `/dev/` included
 
 ## Development Commands
 
