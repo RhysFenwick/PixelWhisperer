@@ -21,6 +21,7 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 - Add live feed function
 - Make selected pixels refer back to where on screen when clicked
 - Labels on the picture for selected pixels
+- Colour boxes on selected pixel list
 
 ## Broader Accessibility
 - Keyboard controls (maybe have keyboard input reset to top left?)
