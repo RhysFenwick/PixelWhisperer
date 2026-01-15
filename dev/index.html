@@ -6,18 +6,17 @@
 
   <!-- CSP Report-Only: Require SRI for scripts and send reports -->
   <meta http-equiv="Content-Security-Policy-Report-Only"
-      content="require-sri-for script; report-uri https://falling-tree-3973.tines.com/webhook/your-first-story; report-to sri-endpoint">
+    content="require-sri-for script; report-uri https://falling-tree-3973.tines.com/webhook/your-first-story/">
 
-
-  <title>Pixel Whisperer</title>
+  <title>Pixel Whisperer (DEV)</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="icon" type="image/x-icon" href="img/favicon.ico" />
-  <script src="hashscript.js" integrity="sha384-QK+xAfM57HSrv9WQCd9U0YaFkfng/k7P4n1I2v7fBfSC3Il4Z19cBP+TDc00NFP+" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="icon" type="image/x-icon" href="../img/favicon.ico" />
+  <script src="../hashscript.js" integrity="sha384-QK+xAfM57HSrv9WQCd9U0YaFkfng/k7P4n1I2v7fBfSC3Il4Z19cBP+TDc00NFP+" crossorigin="anonymous"></script>
 </head>
 <body onload="init()">
   <div class="container-fluid">
-    <h1 id="page-heading" class="text-center">Pixel Whisperer</h1>
+    <h1 id="page-heading" class="text-center">Pixel Whisperer (DEV)</h1>
 
     <div class="row g-3">
 
@@ -32,8 +31,8 @@
           <div id="img-box" class="position-relative border">
             <div id="image-fence" class="overflow-auto">
               <div id="picture-frame">
-                <img id="picker-image" src="img/Sculpture.jpg" />
-                <img id="original-image" src="img/Sculpture.jpg" style="display:none;" />
+                <img id="picker-image" src="../img/Sculpture.jpg" />
+                <img id="original-image" src="../img/Sculpture.jpg" style="display:none;" />
               </div>
               <div id="horizontal-line" class="crosshair-line"></div>
               <div id="vertical-line" class="crosshair-line"></div>
@@ -71,7 +70,7 @@
               <button class="btn btn-outline-secondary btn-sm" id="fast-down">↓↓</button>
               <div></div>
               <div></div>
-              
+
             </div>
           </div>
 
@@ -127,6 +126,10 @@
           <div class="rgb-bar mb-1">
             <div id="blue-amount" class="rgb-amount" style="background-color:blue;"></div>
           </div>
+          <div class="form-check my-3">
+            <input type="checkbox" id="average-mode" class="form-check-input">
+            <label for="average-mode" class="form-check-label">Average colour (3x3)</label>
+          </div>
           <h4>Magnifying glass</h4>
           <div id="mag-glass" class="border"></div>
           <input type="range" min="1" max="15" value="11" class="form-range my-2" id="mag-res">
@@ -153,7 +156,7 @@
           <h3 class="text-center" id="change-image">Change Image</h3>
           <div class="popup" id="image-popup-icon">&#9432
             <span class="popuptext" id="image-popup-text">No images leave your device - all processing occurs locally.</span>
-          </div> 
+          </div>
           <!-- Hidden file input -->
           <input type="file" id="image-upload-button" accept="image/*" class="d-none" />
 
@@ -182,10 +185,7 @@
     </p>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="./script.js?v=1.4"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- 100% privacy-first analytics -->
-  <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
-
 </body>
 </html>
