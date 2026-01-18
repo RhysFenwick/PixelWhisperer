@@ -156,6 +156,17 @@ function closestcolour(totalList, sample) {
 // Webpage interactivity
 ////////////////////////////////////////
 
+// Logic for Settings modal
+const settingsBtn = document.getElementById('nav-settings');
+const settingsModal = document.getElementById('settings-modal');
+const settingsCloseBtn = document.getElementById('settings-close-button');
+settingsBtn.addEventListener('click', function() {
+  settingsModal.style.display = 'block';
+});
+settingsCloseBtn.addEventListener('click', function() {
+  settingsModal.style.display = 'none';
+});
+
 // Set up brightness slider
 brightness_slider.oninput = function() { 
   brightness = this.value;
