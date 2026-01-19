@@ -231,27 +231,50 @@
           <!-- eLab Mode Setting -->
           <div class="mb-3">
             <label for="elab-mode-setting" class="form-label">eLab Mode</label>
-            <select class="form-select" id="elab-mode-setting">
-              <option value="off" selected>Off</option>
-              <option value="on">On</option>
-            </select>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="elab-mode-setting" id="elab-mode-off" value="off" checked>
+              <label class="form-check-label" for="elab-mode-off">
+                Off
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="elab-mode-setting" id="elab-mode-on" value="on">
+              <label class="form-check-label" for="elab-mode-on">
+                On
+              </label>
+            </div>
           </div>
 
           <!-- Blur Setting -->
           <div class="mb-3">
-            <label for="blur-setting" class="form-label">Image Blur Level</label>
-            <select class="form-select" id="blur-setting">
-              <option value="none" selected>None</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
+            <label for="blur-setting" class="form-label">Get the average colour from...</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="blur-setting" id="blur-1" value="1" checked>
+              <label class="form-check-label" for="blur-1">
+                Just the selected pixel
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="blur-setting" id="blur-3" value="3">
+              <label class="form-check-label" for="blur-3">
+                A 3x3 area around the selected pixel
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="blur-setting" id="blur-5" value="5">
+              <label class="form-check-label" for="blur-5">
+                A 5x5 area around the selected pixel
+              </label>
+            </div>
+
           </div>
-          
+
           <!-- Magnifying Glass Size Setting -->
           <div class="mb-3">
             <label for="mag-glass-size" class="form-label">Magnifying Glass Size (px)</label>
-            <input type="number" class="form-control" id="mag-glass-size" min="3" max="15" value="9" step="2">
+            <input type="range" class="form-range" id="mag-glass-size" min="5" max="15" value="9" step="2">
           </div>
 
         <div class="modal-footer">
