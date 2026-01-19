@@ -16,18 +16,23 @@
 </head>
 <body onload="init()">
   <div class="container-fluid">
+    <!-- Page heading - if nav buttons clash with it, it should render beneath them -->
     <h1 id="page-heading" class="text-center">Pixel Whisperer (DEV)</h1>
 
     <!-- Nav buttons in the top right -->
-    <div class="position-absolute top-0 end-0">
+    <div class="position-absolute top-0 end-0" id="nav-buttons">
       
-      <button class="btn btn-primary"
+      <button 
+              id="settings-button"
+              class="btn btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#settings-modal">
         Settings
       </button>
 
-      <button class="btn btn-primary"
+      <button 
+              id="about-button"
+              class="btn btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#about-modal">
         About

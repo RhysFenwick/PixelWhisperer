@@ -157,7 +157,7 @@ function closestcolour(totalList, sample) {
 ////////////////////////////////////////
 
 // Logic for Settings modal
-const settingsBtn = document.getElementById('nav-settings');
+const settingsBtn = document.getElementById('settings-button');
 const settingsModal = document.getElementById('settings-modal');
 const settingsCloseBtn = document.getElementById('settings-close-button');
 settingsBtn.addEventListener('click', function() {

@@ -41,6 +41,9 @@ html {
   image-rendering: crisp-edges;
 }
 
+#nav-buttons {
+  background-color: #fff;
+}
 
 .rgb-bar {
   width: 100%;
@@ -91,6 +94,16 @@ html {
   #picture-frame {
     width: 90vw;      /* expand viewport up to 90% of screen width */
     max-width: 90vw;
+  }
+  #page-heading { /* Lowers itself if nav buttons clash */
+    font-size: 1.5rem;  /* reduce heading size */
+    padding-top: 2.5rem; /* add top margin to separate from nav buttons */
+    background-color: #fff;
+  }
+  #nav-buttons {
+    position: static;  /* make nav buttons part of normal flow */
+    text-align: center;  /* center nav buttons */
+    width: 100%;  /* make nav buttons full width */
   }
 }
 
