@@ -21,6 +21,7 @@ let lastCrosshairX = 0, lastCrosshairY = 0; // Similar to lastMouseX/Y but for t
 let lastTouchX = 0, lastTouchY = 0; // Similar to lastMouse but for touch
 let isZoomAdjusted = false; // Whether zoom has been auto-adjusted yet
 let averageMode = false; // Whether to use 3x3 average colour sampling
+let blurLevel = 1; // Default blur level (no blur, 1x1 pixel)
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -170,9 +171,29 @@ settingsCloseBtn.addEventListener('click', function() {
 });
 
 // Elements of specific settings
-const elabModeOnRadio = document.getElementById('elab-mode-on'); // MECE with elabModeOffRadio
-const elabModeOffRadio = document.getElementById('elab-mode-off'); // MECE with elabModeOnRadio
+const elabModeSelect = document.getElementById('elab-mode-setting');
+const blurSelect = document.getElementById('blur-setting');
+const magGlassSelect = document.getElementById('mag-glass-size');
 
+// Save button logic - reads settings and applies them
+settingsSaveBtn.addEventListener('click', function() {
+  // ELAB mode
+  if (elabModeSelect.value === 'on') {
+    elabChanger(true);
+  }
+  else {    
+    elabChanger(false);
+  }
+
+  // Blur level
+  blurLevel = parseInt(blurSelect.value);
+
+  // Magnifying glass size
+  if (magGlassSelect.value % 2) { // If it's odd
+    magSize = magGlassSelect.value;
+    magZoom();
+  }
+});
 
 
 ////////////////////////////////////////
@@ -221,7 +242,6 @@ function changeContrast() {
 
 // Set up magnifying glass & slider
 const magGlass = document.getElementById("mag-glass");
-const magSlider = document.getElementById("mag-res");
 
 // Add squares
 var magSize = 11; // Initial square length of magnifying glass - should be an odd number!
@@ -247,13 +267,6 @@ function magZoom() {
   magPixels.item((magPixels.length - 1) / 2).style.borderRadius = "2px";
 }
 
-// Add magnifying glass slider functionality
-magSlider.oninput = function() {
-  if (this.value%2) { // If it's odd
-    magSize = this.value;
-  }
-  magZoom();
-}
 
 // Gets pixel data from list (rather than getImageData() being called every time)
 function getPixelFromFullData(x, y) {
@@ -623,9 +636,9 @@ cameraButton.textContent = 'Take Photo';
 // ELAB checkbox toggle
 const elabCheck = document.getElementById('elab-mode');
 
-// ELAB changer
-function elabChanger() {
-  if (elabCheck.checked) {
+// ELAB changer - takes a bool of whether ELAB mode should be on, and changes the page accordingly (colour list and heading)
+function elabChanger(elabOn) {
+  if (elabOn) {
     // Make ELAB mode
     document.getElementById('page-heading').textContent = "Pixel Whisperer (DEV - ELAB Mode)";
     totalList = eLabList
@@ -637,14 +650,6 @@ function elabChanger() {
   }
 }
 
-
-// Event listener for ELAB checkbox
-elabCheck.addEventListener('change', function() {
-  elabChanger();
-});
-
-// Average mode checkbox toggle (will be set up in init())
-let averageCheck;
 
 // Listener for people pressing the zoom in or zoom out buttons
 document.getElementById('zoom-in').addEventListener('click', function() {
@@ -846,29 +851,9 @@ function initArrowPad() {
 // Function to call on page load
 function init() {
   // Uncheck ELAB mode by default (and call change function)
-  elabCheck.checked = false;
-  elabChanger();
+  elabChanger(false);
+  elabModeSelect.value = 'off';
 
-  // Set up average mode checkbox
-  averageCheck = document.getElementById('average-mode');
-  console.log('[DEBUG] init() - Average mode checkbox element:', averageCheck);
-
-  if (averageCheck) {
-    // Uncheck average mode by default
-    averageCheck.checked = false;
-    averageMode = false;
-    console.log('[DEBUG] init() - Average mode initialized:', averageMode);
-
-    // Add event listener for average mode checkbox
-    averageCheck.addEventListener('change', function() {
-      averageMode = this.checked;
-      console.log(`[DEBUG] Average mode toggled: ${averageMode ? 'ENABLED' : 'DISABLED'}`);
-      updateFocus(); // Update display immediately to reflect the change
-    });
-    console.log('[DEBUG] Average mode event listener attached');
-  } else {
-    console.error('[DEBUG] ERROR: Average mode checkbox not found!');
-  }
   // Do the same for brightness
   brightness_slider.value = 50;
   changeBrightness();
