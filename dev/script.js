@@ -153,19 +153,31 @@ function closestcolour(totalList, sample) {
 
 
 ////////////////////////////////////////
-// Webpage interactivity
+// Settings modal logic
 ////////////////////////////////////////
 
-// Logic for Settings modal
+// Elements of Settings modal
 const settingsBtn = document.getElementById('settings-button');
 const settingsModal = document.getElementById('settings-modal');
 const settingsCloseBtn = document.getElementById('settings-close-button');
+const settingsSaveBtn = document.getElementById('settings-save-button');
+
 settingsBtn.addEventListener('click', function() {
   settingsModal.style.display = 'block';
 });
 settingsCloseBtn.addEventListener('click', function() {
   settingsModal.style.display = 'none';
 });
+
+// Elements of specific settings
+const elabModeOnRadio = document.getElementById('elab-mode-on'); // MECE with elabModeOffRadio
+const elabModeOffRadio = document.getElementById('elab-mode-off'); // MECE with elabModeOnRadio
+
+
+
+////////////////////////////////////////
+// Other webpage interactivity
+////////////////////////////////////////
 
 // Set up brightness slider
 brightness_slider.oninput = function() { 

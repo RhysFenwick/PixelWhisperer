@@ -16,6 +16,9 @@ A huge thank you to Cait Greenup, Maximillian Ringland, and Professor Joe Covent
 
 ## TODO
 - Make crosshairs fall on pixel, not between them
+- Vertical lock
+- Image rotation
+- Hit enter to read value
 - Make scrollbars fall outside image if possible
 - Average out colour over area (thanks Cam!)
 - Intensity measurement? (possibly HSV rather than RGB, or alpha channel)
