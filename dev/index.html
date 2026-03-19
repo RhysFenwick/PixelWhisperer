@@ -147,13 +147,8 @@
           <div class="rgb-bar mb-1">
             <div id="blue-amount" class="rgb-amount" style="background-color:blue;"></div>
           </div>
-          <div class="form-check my-3">
-            <input type="checkbox" id="average-mode" class="form-check-input">
-            <label for="average-mode" class="form-check-label">Average colour (3x3)</label>
-          </div>
           <h4>Magnifying glass</h4>
           <div id="mag-glass" class="border"></div>
-          <input type="range" min="1" max="15" value="11" class="form-range my-2" id="mag-res">
           <p id="pixel-xy">0 right, 0 down</p>
         </div>
       </div>
@@ -254,7 +249,8 @@
           <!-- Magnifying Glass Size Setting -->
           <div class="mb-3">
             <label for="mag-glass-size" class="form-label">Magnifying Glass Size (px)</label>
-            <input type="range" class="form-range" id="mag-glass-size" min="5" max="15" value="9" step="2">
+            <input type="range" class="form-range" id="mag-glass-size" min="5" max="15" value="9" step="2" oninput="this.nextElementSibling.value = this.value">
+            <output for="mag-glass-size" id="mag-glass-size-value" style="width:100%; text-align: center;">9</output>
           </div>
 
         <div class="modal-footer">
@@ -262,7 +258,7 @@
                   data-bs-dismiss="modal" id="settings-close-button">
             Close
           </button>
-          <button type="button" id="settings-save-button" class="btn btn-primary">Save changes</button>
+          <button type="button" id="settings-save-button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
         </div>
       </form>
     </div>

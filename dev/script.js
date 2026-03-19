@@ -189,12 +189,14 @@ settingsSaveBtn.addEventListener('click', function() {
 
   // Blur level
   blurLevel = parseInt(blurSelect.value);
+  console.log(`Blur level set to ${blurLevel}`);
 
   // Magnifying glass size
   if (magGlassSelect.value % 2) { // If it's odd
     magSize = magGlassSelect.value;
     magZoom();
   }
+  console.log(magSize)
 
   // Then hide the modal again
   settingsModal.style.display = 'none';
@@ -254,11 +256,12 @@ const magPixels = document.getElementById("mag-glass").children; // HTMLCollecti
 
 // Changes the magnifying glass to the chosen resolution
 function magZoom() {
-  // Set grid styling as a square
-  magGlass.style.gridTemplate = "auto ".repeat(magSize).concat("/ ","auto ".repeat(magSize));
 
   // Wipe the slate...
   magGlass.innerHTML = '';
+
+    // ...Set grid styling as a square...
+  magGlass.style.gridTemplate = "auto ".repeat(magSize).concat("/ ","auto ".repeat(magSize));
 
   // ...And add all the squares again
   for (var i=0; i<magSize**2;i++) {
