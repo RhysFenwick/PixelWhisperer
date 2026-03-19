@@ -22,6 +22,7 @@ let lastTouchX = 0, lastTouchY = 0; // Similar to lastMouse but for touch
 let isZoomAdjusted = false; // Whether zoom has been auto-adjusted yet
 let averageMode = false; // Whether to use 3x3 average colour sampling
 let blurLevel = 1; // Default blur level (no blur, 1x1 pixel)
+let sideLock = false; // Whether to prevent horizontal movement, ensuring crosshairs only move up and down the image
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -193,6 +194,9 @@ settingsSaveBtn.addEventListener('click', function() {
     magSize = magGlassSelect.value;
     magZoom();
   }
+
+  // Then hide the modal again
+  settingsModal.style.display = 'none';
 });
 
 
@@ -770,6 +774,22 @@ document.addEventListener('keydown', function(event) {
         break;
     }
 
+    // Then check for Enter (acts as a click)
+    if (event.key === 'Enter') {
+      event.preventDefault(); // block page scroll
+      // Simulate a click at the current crosshair position
+      const rect = pic.getBoundingClientRect();
+      const clickX = rect.left + lastCrosshairX;
+      const clickY = rect.top + lastCrosshairY;
+      clickOrTap(clickX, clickY);
+    }
+
+    // Then check for sideLock toggle (v key)
+    if (event.key === 'v') {
+      sideLock = !sideLock;
+      console.log(`Side lock ${sideLock ? 'enabled' : 'disabled'}`);
+    }
+
     // Then check for hidden codes
 
     if (inputSequence.length > debugSequence.length) {
@@ -799,12 +819,17 @@ function scrollImage(axis, increment_up, step=1) {
   let scrollName;
   if (axis == 'x') {
     scrollName = 'scrollLeft';
+    // Check for horizontal lock
+    if (sideLock) {
+      dir = 0;
+    }
     lastMouseX += dir;
   }
   else {
     scrollName = 'scrollTop';
     lastMouseY += dir;
   }
+
 
   const before_scroll = frame.parentElement[scrollName]; // Number - should get val not ref
   frame.parentElement[scrollName] += dir;
