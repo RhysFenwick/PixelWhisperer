@@ -23,6 +23,7 @@ let isZoomAdjusted = false; // Whether zoom has been auto-adjusted yet
 let averageMode = false; // Whether to use 3x3 average colour sampling
 let blurLevel = 1; // Default blur level (no blur, 1x1 pixel)
 let sideLock = false; // Whether to prevent horizontal movement, ensuring crosshairs only move up and down the image
+let vertLock = false // Same as sideLock but for vertical movement
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -288,7 +289,6 @@ function getPixelFromFullData(x, y) {
 // Gets average colour of 3x3 grid centered on x,y
 // Handles edge/corner cases by averaging only available pixels
 function getAverageColor(x, y) {
-  console.log(`[DEBUG] getAverageColor called at (${x}, ${y})`);
   let totalR = 0, totalG = 0, totalB = 0;
   let count = 0;
 
@@ -317,7 +317,6 @@ function getAverageColor(x, y) {
     Math.round(totalB / count),
     255 // Alpha (fully opaque)
   ];
-  console.log(`[DEBUG] getAverageColor result: RGB(${avgColor[0]}, ${avgColor[1]}, ${avgColor[2]}) from ${count} pixels`);
   return avgColor;
 }
 
@@ -355,13 +354,11 @@ function updateFocus() {
   }
 
   // Use average colour if enabled, otherwise single pixel
-  console.log(`[DEBUG] updateFocus - averageMode: ${averageMode}, position: (${lastMouseX}, ${lastMouseY})`);
   const pixelData = averageMode
     ? getAverageColor(lastMouseX, lastMouseY)
     : getPixelFromFullData(lastMouseX, lastMouseY);
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const [colourHex, colourName] = closestcolour(totalList, hex);
-  console.log(`[DEBUG] updateFocus - Mode: ${averageMode ? 'AVERAGE' : 'SINGLE'}, Hex: ${hex}, Name: ${colourName}`);
 
   document.getElementById("colour-name").textContent = `${colourHex.hex} - ${colourName}`;
   document.getElementById("colour-hex").textContent = `${hex}`;
@@ -397,14 +394,15 @@ function moveOrDrag(x,y) {
     lastMouseX = x - Math.floor(rect.left);
     lastCrosshairX = x - Math.floor(fence_rect.left);
   }
-  lastMouseY = y - Math.floor(rect.top);
-  lastCrosshairY = y - Math.floor(fence_rect.top);
+  if (!vertLock) {
+    lastMouseY = y - Math.floor(rect.top);
+    lastCrosshairY = y - Math.floor(fence_rect.top);
+  }
   updateFocus();
 }
 
 // Handles selecting pixels in the image
 function clickOrTap(tapX,tapY) {
-  console.log(`[DEBUG] clickOrTap called - averageMode: ${averageMode}`);
   const rect = pic.getBoundingClientRect();
   const x = tapX - Math.floor(rect.left);
   const y = tapY - Math.floor(rect.top);
@@ -418,13 +416,11 @@ function clickOrTap(tapX,tapY) {
     canvasX = Math.floor(x / zoom);
     canvasY = Math.floor(y / zoom);
   }
-  console.log(`[DEBUG] clickOrTap - canvas coordinates: (${canvasX}, ${canvasY}), zoom: ${zoom}`);
 
   // Use average colour if enabled, otherwise single pixel
   const pixelData = averageMode
     ? getAverageColor(canvasX, canvasY)
     : getPixelFromFullData(canvasX, canvasY);
-  console.log(`[DEBUG] clickOrTap - Using ${averageMode ? 'AVERAGE' : 'SINGLE'} mode, RGB: (${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`);
 
   const pixelList = document.getElementById('pixel-list');
   const pixel = document.createElement('li');
@@ -786,10 +782,14 @@ document.addEventListener('keydown', function(event) {
       clickOrTap(clickX, clickY);
     }
 
-    // Then check for sideLock toggle (v key)
+    // Then check for sideLock toggle (v key) and vertLock toggle (h key)
     if (event.key === 'v') {
       sideLock = !sideLock;
       console.log(`Side lock ${sideLock ? 'enabled' : 'disabled'}`);
+    }
+    if (event.key === 'h') {
+      vertLock = !vertLock;
+      console.log(`Vertical lock ${vertLock ? 'enabled' : 'disabled'}`);
     }
 
     // Then check for hidden codes
@@ -827,8 +827,12 @@ function scrollImage(axis, increment_up, step=1) {
     }
     lastMouseX += dir;
   }
-  else {
+  else { // axis == 'y'
     scrollName = 'scrollTop';
+    // Check for vertical lock
+    if (vertLock) {
+      dir = 0;
+    }
     lastMouseY += dir;
   }
 
