@@ -393,9 +393,11 @@ function updateFocus() {
 function moveOrDrag(x,y) {
   const rect = pic.getBoundingClientRect();
   const fence_rect = fence.getBoundingClientRect();
-  lastMouseX = x - Math.floor(rect.left);
+  if (!sideLock) {
+    lastMouseX = x - Math.floor(rect.left);
+    lastCrosshairX = x - Math.floor(fence_rect.left);
+  }
   lastMouseY = y - Math.floor(rect.top);
-  lastCrosshairX = x - Math.floor(fence_rect.left);
   lastCrosshairY = y - Math.floor(fence_rect.top);
   updateFocus();
 }
