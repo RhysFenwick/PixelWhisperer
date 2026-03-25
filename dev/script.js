@@ -741,28 +741,38 @@ function debug(onOff) {
 let inputSequence = [];
 const debugSequence = ['d', 'e', 'b', 'u', 'g']; // The sequence to trigger debug mode
 const hideDebugSequence = ['r', 'e', 's', 'e','t']; // The sequence to hide debug mode
+const keysPressed = {}; // Object to track currently pressed keys for modifiers etc
+
+document.addEventListener('keyup', function(event) {
+    delete keysPressed[event.key]; // Remove key from pressed keys on release
+});
 
 document.addEventListener('keydown', function(event) {
+    keysPressed[event.key] = true;
+
     inputSequence.push(event.key);
 
     // First, check for image movement
-    const step = 1;
+    let step = 1;
+    if (keysPressed['q'] || keysPressed['Q']) {
+      step = 10; // Move faster if Q is held
+    }
     switch (event.key) {
       case 'ArrowUp':
         event.preventDefault(); // block page scroll
-        scrollImage("y",false);
+        scrollImage("y",false, step);
         break;
       case 'ArrowDown':
         event.preventDefault(); // block page scroll
-        scrollImage("y",true);
+        scrollImage("y",true, step);
         break;
       case 'ArrowLeft':
         event.preventDefault(); // block page scroll
-        scrollImage("x",false);
+        scrollImage("x",false, step);
         break;
       case 'ArrowRight':
         event.preventDefault(); // block page scroll
-        scrollImage("x",true);
+        scrollImage("x",true, step);
         break;
     }
 

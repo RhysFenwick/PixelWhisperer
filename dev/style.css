@@ -7,6 +7,14 @@ html {
   background-color: #555;
 }
 
+code {
+  font-family: 'Lucide Console', monospace;
+  background-color: #e9ecef;
+  color: #000;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
 .crosshair-line {
   position: absolute;
   background-color: black;
@@ -42,7 +50,7 @@ html {
 }
 
 #nav-buttons {
-  background-color: #333;
+  background-color: #fff;
 }
 
 .rgb-bar {

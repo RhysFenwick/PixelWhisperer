@@ -23,6 +23,14 @@
     <div class="position-absolute top-0 end-0" id="nav-buttons">
       
       <button 
+              id="shortcuts-button"
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#shortcuts-modal">
+        Shortcuts
+      </button>
+
+      <button 
               id="settings-button"
               class="btn btn-primary"
               data-bs-toggle="modal"
@@ -169,15 +177,17 @@
       <!-- Image Upload -->
       <div class="col-4 col-lg-1 text-center mx-auto">
         <div class="border rounded p-2 border-3">
-          <h3 class="text-center" id="change-image">Change Image</h3>
-          <div class="popup" id="image-popup-icon">&#9432
-            <span class="popuptext" id="image-popup-text">No images leave your device - all processing occurs locally.</span>
-          </div>
+          <h3 class="text-center">Actions</h3>
+          <h4 class="text-center" id="change-image">Change Image</h2>
+
           <!-- Hidden file input -->
           <input type="file" id="image-upload-button" accept="image/*" class="d-none" />
 
           <!-- Custom label styled as button -->
           <label for="image-upload-button" class="btn btn-outline-primary btn-sm mb-2">Upload</label>
+          <div class="popup" id="image-popup-icon">&#9432
+            <span class="popuptext" id="image-popup-text">No images leave your device - all processing occurs locally.</span>
+          </div>
 
           <button id="camera-button" class="btn btn-outline-primary btn-sm mb-1">Take Photo</button>
           <button id="camera-close-button" class="btn btn-outline-secondary btn-sm mb-1" style="display: none;">Close Camera</button>
@@ -189,7 +199,7 @@
     </div>
   </div>
 
-  <!-- About and Settings Modals -->
+  <!-- Modals (About, Settings, and Shortcuts) -->
   <!-- About Modal -->
   <div class="modal fade" id="about-modal" tabindex="-1" aria-labelledby="about-modal-label" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -199,7 +209,9 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="about-modal-body">
-          <!-- About content will be loaded here -->
+          <p>Pixel Whisperer is an accessibility-focused tool to help users identify the colours of an image in natural language.</p>
+          <p>It uses the <a href="https://www.munsellcolorscienceforpainters.com/ISCCNBS/ISCCNBSSystem.html" target="_blank" rel="noopener noreferrer">ISCC-NBS Colour System</a> for colour labels, with some additional greyscale values added.</p>
+          <p>It was created at the Australian National University. The code is open source under the MIT License, and available on <a href="https://github.com/RhysFenwick/PixelWhisperer" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -208,6 +220,26 @@
     </div>
   </div>
   
+    <!-- Shortcuts Modal -->
+  <div class="modal fade" id="shortcuts-modal" tabindex="-1" aria-labelledby="shortcuts-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="shortcuts-modal-label">Shortcuts</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="shortcuts-modal-body">
+          <p>Arrow keys can be used to navigate the image. Hold down <code>Q</code> to move quickly.</p> 
+          <p><code>Enter</code> will select the currently highlighted pixel.</p>
+          <p>You can lock horizontal or vertical movement using the <code>H</code> and <code>V</code> keys.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- Settings Modal -->
 <div class="modal fade" id="settings-modal" tabindex="-1"
      aria-labelledby="settings-modal-label" aria-hidden="true">
