@@ -786,10 +786,22 @@ document.addEventListener('keydown', function(event) {
     // Then check for sideLock toggle (v key) and vertLock toggle (h key)
     if (event.key === 'v') {
       sideLock = !sideLock;
+      if (sideLock) {
+        verticalLine.style.backgroundColor = 'red';
+      }
+      else {        
+        verticalLine.style.backgroundColor = 'black';
+      }
       console.log(`Side lock ${sideLock ? 'enabled' : 'disabled'}`);
     }
     if (event.key === 'h') {
       vertLock = !vertLock;
+      if (vertLock) {
+        horizontalLine.style.backgroundColor = 'red';
+      }
+      else {        
+        horizontalLine.style.backgroundColor = 'black';
+      }
       console.log(`Vertical lock ${vertLock ? 'enabled' : 'disabled'}`);
     }
 
