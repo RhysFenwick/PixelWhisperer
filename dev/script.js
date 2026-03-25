@@ -364,6 +364,12 @@ function updateCentralPixel() {
 
     let magPixelX = Math.floor((PicX - (magSize - 1)/2 + magCol));
     let magPixelY = Math.floor((PicY - (magSize - 1)/2 + magRow));
+    
+    // Find out-of-range magPixels and make them black
+    if (magPixelX < 0 || magPixelX >= original_pic.naturalWidth || magPixelY < 0 || magPixelY >= original_pic.naturalHeight) {
+      magPixels.item(i).style.backgroundColor = "#000000";
+      continue; // Skip to next pixel
+    }
 
     const magData = getPixelFromFullData(magPixelX, magPixelY);
     const magColour = rgbToHex(magData[0], magData[1], magData[2]);
