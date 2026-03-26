@@ -774,6 +774,12 @@ document.addEventListener('keydown', function(event) {
         event.preventDefault(); // block page scroll
         scrollImage("x",true, step);
         break;
+      case '+':
+        changeZoom(zoom * 2);
+        break;
+      case '-':
+        changeZoom(zoom / 2);
+        break;
     }
 
     // Then check for Enter (acts as a click)
