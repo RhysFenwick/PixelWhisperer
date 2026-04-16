@@ -1,9 +1,28 @@
 ////////////////////////////////////////
+// Rewrite script - taking the Dev script and rewriting it to a simpler architecture (I hope)
+// Architecture: Have global vars for x/y coords
+// Everything else either modifies the global vars or pulls from the global vars (get/set)
+// There are a few different x/y pairs:
+// 1. PicX/Y - relative to the original image, the main ones shown to the user
+// 2. CanvasX/Y - relative to the canvas, which changes on zoom; used for colour picking and magnifying glass
+// 3. FrameX/Y - relative to the frame, used for crosshair positioning - CanvasX/Y but with scrolling taken into account (I think)
+// 4. WindowX/Y - relative to the window as whole, used for mouse events
+// Ideally PicX/Y should be the main one used, with the others converted as needed
+// Pic -> Canvas = Pic * Zoom; Canvas -> Pic = Canvas / Zoom (floored)
+// Canvas -> Frame = Canvas - Scroll; Frame -> Canvas = Frame + Scroll (I think)
+// Window -> Frame = Window - FramePos; Frame -> Window = Frame + FramePos (FramePos being top left corner of frame relative to the window)
+// Other things to note:
+// FullImageData/FullData - holds the data for the canvas (which changes on zoom) so CanvasX/Y should be used
+////////////////////////////////////////
+
+
+
+////////////////////////////////////////
 // Declarations and set-up
 ////////////////////////////////////////
 
 let colourList = {}, eLabList = {}, totalList = [];
-let zoom = 1, inv_zoom = 1;
+let zoom = 1;
 let relativeX = 0, relativeY = 0;
 let debugMode = false;  
 let fullImageData, fullData; // Will hold the full image data to prevent many calls to getImageData
@@ -13,6 +32,18 @@ let lastMouseX = 0, lastMouseY = 0; // Last known mouse coords (for when scrolli
 let lastCrosshairX = 0, lastCrosshairY = 0; // Similar to lastMouseX/Y but for the crosshair (i.e. relative to viewport not image)
 let lastTouchX = 0, lastTouchY = 0; // Similar to lastMouse but for touch
 let isZoomAdjusted = false; // Whether zoom has been auto-adjusted yet
+let averageMode = false; // Whether to use 3x3 average colour sampling
+let blurLevel = 1; // Default blur level (no blur, 1x1 pixel)
+let sideLock = false; // Whether to prevent horizontal movement, ensuring crosshairs only move up and down the image
+let vertLock = false // Same as sideLock but for vertical movement
+let magSize = 11; // Initial square length of magnifying glass - should be an odd number!
+
+
+// Rewritten X/Y vars to initialise
+let PicX = 0, PicY = 0; // Relative to the original image, the main ones shown to the user
+let CanvasX = 0, CanvasY = 0; // Relative to the canvas, which changes on zoom; used for colour picking and magnifying glass
+let FrameX = 0, FrameY = 0; // Relative to the frame, used for crosshair positioning - CanvasX/Y but with scrolling taken into account (I think)
+let WindowX = 0, WindowY = 0; // Relative to the window as whole, used for mouse events
 
 const horizontalLine = document.getElementById('horizontal-line');
 const verticalLine = document.getElementById('vertical-line');
@@ -145,7 +176,55 @@ function closestcolour(totalList, sample) {
 
 
 ////////////////////////////////////////
-// Webpage interactivity
+// Settings modal logic
+////////////////////////////////////////
+
+// Elements of Settings modal
+const settingsBtn = document.getElementById('settings-button');
+const settingsModal = document.getElementById('settings-modal');
+const settingsCloseBtn = document.getElementById('settings-close-button');
+const settingsSaveBtn = document.getElementById('settings-save-button');
+
+settingsBtn.addEventListener('click', function() {
+  settingsModal.style.display = 'block';
+});
+settingsCloseBtn.addEventListener('click', function() {
+  settingsModal.style.display = 'none';
+});
+
+// Elements of specific settings
+const elabModeSelect = document.getElementById('elab-mode-setting');
+const blurSelect = document.getElementById('blur-setting');
+const magGlassSelect = document.getElementById('mag-glass-size');
+
+// Save button logic - reads settings and applies them
+settingsSaveBtn.addEventListener('click', function() {
+  // ELAB mode
+  if (elabModeSelect.value === 'on') {
+    elabChanger(true);
+  }
+  else {    
+    elabChanger(false);
+  }
+
+  // Blur level
+  blurLevel = parseInt(blurSelect.value);
+  console.log(`Blur level set to ${blurLevel}`);
+
+  // Magnifying glass size
+  if (magGlassSelect.value % 2) { // If it's odd
+    magSize = magGlassSelect.value;
+    magZoom();
+  }
+  console.log(magSize)
+
+  // Then hide the modal again
+  settingsModal.style.display = 'none';
+});
+
+
+////////////////////////////////////////
+// Other webpage interactivity
 ////////////////////////////////////////
 
 // Set up brightness slider
@@ -190,19 +269,18 @@ function changeContrast() {
 
 // Set up magnifying glass & slider
 const magGlass = document.getElementById("mag-glass");
-const magSlider = document.getElementById("mag-res");
 
 // Add squares
-var magSize = 11; // Initial square length of magnifying glass - should be an odd number!
 const magPixels = document.getElementById("mag-glass").children; // HTMLCollection is live - will update as mag-glass changes
 
 // Changes the magnifying glass to the chosen resolution
 function magZoom() {
-  // Set grid styling as a square
-  magGlass.style.gridTemplate = "auto ".repeat(magSize).concat("/ ","auto ".repeat(magSize));
 
   // Wipe the slate...
   magGlass.innerHTML = '';
+
+    // ...Set grid styling as a square...
+  magGlass.style.gridTemplate = "auto ".repeat(magSize).concat("/ ","auto ".repeat(magSize));
 
   // ...And add all the squares again
   for (var i=0; i<magSize**2;i++) {
@@ -216,19 +294,10 @@ function magZoom() {
   magPixels.item((magPixels.length - 1) / 2).style.borderRadius = "2px";
 }
 
-// Add magnifying glass slider functionality
-magSlider.oninput = function() {
-  if (this.value%2) { // If it's odd
-    magSize = this.value;
-  }
-  magZoom();
-}
 
 // Gets pixel data from list (rather than getImageData() being called every time)
 function getPixelFromFullData(x, y) {
-  x = Math.max(0, Math.min(canvas.width - 1, x));
-  y = Math.max(0, Math.min(canvas.height - 1, y));
-  const index = (y * canvas.width + x) * 4;
+  const index = ((y * original_pic.naturalWidth + x) * 4);
   return [
     fullData[index],     // R
     fullData[index + 1], // G
@@ -237,40 +306,47 @@ function getPixelFromFullData(x, y) {
   ];
 }
 
+// Gets average colour of 3x3 grid centered on x,y
+// Handles edge/corner cases by averaging only available pixels
+function getAverageColor(x, y) {
+  let totalR = 0, totalG = 0, totalB = 0;
+  let count = 0;
+
+  // Sample 3x3 grid centered on x,y
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const sampleX = x + dx;
+      const sampleY = y + dy;
+
+      // Check if pixel is within bounds
+      if (sampleX >= 0 && sampleX < canvas.width &&
+          sampleY >= 0 && sampleY < canvas.height) {
+        const pixelData = getPixelFromFullData(sampleX, sampleY);
+        totalR += pixelData[0];
+        totalG += pixelData[1];
+        totalB += pixelData[2];
+        count++;
+      }
+    }
+  }
+
+  // Return average RGB values
+  const avgColor = [
+    Math.round(totalR / count),
+    Math.round(totalG / count),
+    Math.round(totalB / count),
+    255 // Alpha (fully opaque)
+  ];
+  return avgColor;
+}
+
 // Triggered on mouse move or arrow keys
-function updateFocus() {
+function updateCentralPixel() {
 
-  // Make sure variables are clamped as needed
-  // Very messy but so be it
-  if (lastMouseX < 0) {
-    lastMouseX = 0;
-  }
-  else if (lastCrosshairX > fence.getBoundingClientRect().width) {
-    lastCrosshairX = fence.getBoundingClientRect().width;
-  }
-
-  if (lastCrosshairY < 0) {
-    lastCrosshairY = 0;
-  }
-  else if (lastCrosshairY > fence.getBoundingClientRect().height) {
-    lastCrosshairY = fence.getBoundingClientRect().height;
-  }
-
-  if (lastMouseX < 0) {
-    lastMouseX = 0;
-  }
-  else if (lastMouseX > pic.width) {
-    lastMouseX = pic.width;
-  }
-
-  if (lastMouseY < 0) {
-    lastMouseY = 0;
-  }
-  else if (lastMouseY > pic.height) {
-    lastMouseY = pic.height;
-  }
-
-  const pixelData = getPixelFromFullData(lastMouseX, lastMouseY);
+  // Use average colour if enabled, otherwise single pixel
+  const pixelData = averageMode
+    ? getAverageColor(PicX, PicY)
+    : getPixelFromFullData(PicX, PicY);
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const [colourHex, colourName] = closestcolour(totalList, hex);
 
@@ -281,66 +357,84 @@ function updateFocus() {
   document.getElementById("green-amount").style.width = `${pixelData[1] * 100 / 255}%`;
   document.getElementById("blue-amount").style.width = `${pixelData[2] * 100 / 255}%`;
 
-  
+  // FUNCTION NEEDING REWRITE
   for (let i = 0; i < magPixels.length; i++) {
     const magRow = Math.floor(i / magSize); // Row number in the magnifying glass
     const magCol = i % magSize; // Column number in the magnifying glass
 
-    let magPixelX = Math.floor((lastMouseX - (magSize - 1)/2 + magCol));
-    let magPixelY = Math.floor((lastMouseY - (magSize - 1)/2 + magRow));
+    let magPixelX = Math.floor((PicX - (magSize - 1)/2 + magCol));
+    let magPixelY = Math.floor((PicY - (magSize - 1)/2 + magRow));
+    
+    // Find out-of-range magPixels and make them black
+    if (magPixelX < 0 || magPixelX >= original_pic.naturalWidth || magPixelY < 0 || magPixelY >= original_pic.naturalHeight) {
+      magPixels.item(i).style.backgroundColor = "#000000";
+      continue; // Skip to next pixel
+    }
 
     const magData = getPixelFromFullData(magPixelX, magPixelY);
     const magColour = rgbToHex(magData[0], magData[1], magData[2]);
     magPixels.item(i).style.backgroundColor = "#" + magColour;
   }
 
-  horizontalLine.style.top = `${lastCrosshairY - 1 + (imgbox.getBoundingClientRect().height - fence.getBoundingClientRect().height)/2}px`;
-  verticalLine.style.left = `${lastCrosshairX - 1 + (imgbox.getBoundingClientRect().width - fence.getBoundingClientRect().width)/2}px`;
-  pixelXY.textContent = `${Math.ceil(lastMouseX * inv_zoom / zoom)} right, ${Math.ceil(lastMouseY * inv_zoom / zoom)} down`;
+  horizontalLine.style.top = `${FrameY}px`;
+  verticalLine.style.left = `${FrameX}px`;
+  pixelXY.textContent = `${PicX} right, ${PicY} down`;
   pic_caption.textContent = `This pixel is approximately ${colourName}.`
 }
 
-// On mouseover or drag, captures the page as a canvas then uses getPixelFromFullData() to get RGB of the clicked pixel, calls closestcolour, and prints the output to the colour_name element.
-function moveOrDrag(x,y) {
+// FUNCTION NEEDING REWRITE
+// On mouseover or drag, takes windowX/Y and updates PicX/Y accordingly, then calls updateCentralPixel()
+// To get from WindowX/Y to PicX/Y: Window -> Frame (Window - FramePos), then Frame -> Canvas (Frame + Scroll), then Canvas -> Pic (Canvas / Zoom)
+function moveOrDrag(WindowX, WindowY) {
   const rect = pic.getBoundingClientRect();
-  const fence_rect = fence.getBoundingClientRect();
-  lastMouseX = x - Math.floor(rect.left);
-  lastMouseY = y - Math.floor(rect.top);
-  lastCrosshairX = x - Math.floor(fence_rect.left);
-  lastCrosshairY = y - Math.floor(fence_rect.top);
-  updateFocus();
+  let CanvasX = WindowX - Math.floor(rect.left)
+  let CanvasY = WindowY - Math.floor(rect.top)
+  setXY(Math.floor(CanvasX / zoom), Math.floor(CanvasY / zoom));
+  updateCentralPixel();
 }
 
 // Handles selecting pixels in the image
-function clickOrTap(tapX,tapY) {
+function clickOrTap(tapX, tapY) {
   const rect = pic.getBoundingClientRect();
   const x = tapX - Math.floor(rect.left);
   const y = tapY - Math.floor(rect.top);
-  var pixelData;
-  if (zoom < 1 ) {
-    pixelData = ctx.getImageData(x, y, 1, 1).data;
-  }
-  else {
-    pixelData = ctx.getImageData(Math.floor(x/zoom), Math.floor(y/zoom), 1, 1).data;
-  } 
+  console.log(`Clicked at WindowX/Y (${tapX}, ${tapY}), FenceX/Y (${x}, ${y})`);
 
-  const pixelList = document.getElementById('pixel-list');
+  // Calculate picX/picY based on zoom
+  setXY(Math.floor(x / zoom), Math.floor(y / zoom));
+
+  console.log(`Translated to PicX/Y (${PicX}, ${PicY})`);
+  savePixel();
+}
+
+// This is the core function for selecting a pixel - pulls PicX/Y directly
+function savePixel() {
+  // Use average colour if enabled, otherwise single pixel
+  const pixelData = averageMode
+    ? getAverageColor(PicX, PicY)
+    : getPixelFromFullData(PicX, PicY);
+
+  const pixelList = document.getElementById('pixel-list'); // TODO: Move this up top for global ref
   const pixel = document.createElement('li');
-  const pixel_xy = document.getElementById('pixel-xy').textContent.split(' ');
+  const pixel_xy = pixelXY.textContent.split(' ');
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const name = closestcolour(totalList, hex)[1];
+
+  // Add average mode indicator if applicable
+  const modeIndicator = averageMode ? ' [AVG]' : '';
 
   // Add colour square to pixel list
   const colourSquare = document.createElement('div');
   colourSquare.className = 'colour-square';
   colourSquare.style.backgroundColor = `#${hex}`;
 
-  pixel.appendChild(document.createTextNode(`${pixel_xy[0]}, ${pixel_xy[2]} - ${hex} (${name})`));
+  // Trim coordinates to remove any extra whitespace
+  const xCoord = pixel_xy[0].trim();
+  const yCoord = pixel_xy[2].trim();
+
+  pixel.appendChild(document.createTextNode(`${xCoord}, ${yCoord} - ${hex} (${name})${modeIndicator}`));
   pixel.appendChild(colourSquare);
   pixelList.appendChild(pixel);
-
-  // Then also move to that point
-  moveOrDrag(tapX,tapY);
 }
 
 // Mouse listeners
@@ -357,16 +451,15 @@ pic.addEventListener('click', function(event) {
 pic.addEventListener('touchstart', e => {
   e.preventDefault(); // block page scroll
   const t = e.touches[0];
-  lastTouchX = t.clientX;
-  lastTouchY = t.clientY;
+  setXY((t.clientX), (t.clientY));
   moved = false;
 }, { passive: false });
 
 pic.addEventListener('touchmove', e => {
   e.preventDefault(); // block page scroll
   const t = e.touches[0];
-  if (Math.abs(t.clientX - lastTouchX) > tap_threshold ||
-      Math.abs(t.clientY - lastTouchY) > tap_threshold) {
+  if (Math.abs(t.clientX - PicX) > tap_threshold ||
+      Math.abs(t.clientY - PicY) > tap_threshold) {
     moved = true;
   }
   moveOrDrag(t.clientX, t.clientY);
@@ -376,7 +469,7 @@ pic.addEventListener('touchend', e => {
   e.preventDefault(); // block page scroll
   if (!moved) {
     // Treat as click/tap
-    clickOrTap(lastTouchX, lastTouchY);
+    clickOrTap(t.clientX, t.clientY);
   }
 });
 
@@ -423,15 +516,23 @@ document.getElementById('export-button').addEventListener('click', function() {
 // Turns the pixel-list into a well-formatted CSV
 function pixelListToCSV(pixelList) {
   const rows = Array.from(pixelList.children).map(pixel => {
-    const line = pixel.textContent.trim(); // "472, 211 - D7D243 - Dark Khaki"
+    const line = pixel.textContent.trim(); // "472, 211 - D7D243 (Dark Khaki) [AVG]" or "472, 211 - D7D243 (Dark Khaki)"
     const [coordPart, colour] = line.split(' - ');
     const [x, y] = coordPart.split(',').map(n => n.trim());
-    const [hex, name] = colour.split("(");
-    return `${x},${y},${hex.trim()},${name.trim().slice(0,-1)}`;
+
+    // Check if this is an averaged pixel
+    const isAverage = colour.includes('[AVG]');
+    const colourWithoutAvg = colour.replace(' [AVG]', '');
+
+    const [hex, nameWithParen] = colourWithoutAvg.split('(');
+    const name = nameWithParen.trim().slice(0, -1); // Remove closing parenthesis
+
+    const avgIndicator = isAverage ? 'Yes' : 'No';
+    return `${x},${y},${hex.trim()},${name},${avgIndicator}`;
   });
 
   // Add header
-  rows.unshift('X Coord,Y Coord,Hex Code,Colour Name');
+  rows.unshift('X Coord,Y Coord,Hex Code,Colour Name,Averaged (3x3)');
 
   return rows.join('\n');
 }
@@ -525,11 +626,11 @@ cameraButton.textContent = 'Take Photo';
 // ELAB checkbox toggle
 const elabCheck = document.getElementById('elab-mode');
 
-// ELAB changer
-function elabChanger() {
-  if (elabCheck.checked) {
+// ELAB changer - takes a bool of whether ELAB mode should be on, and changes the page accordingly (colour list and heading)
+function elabChanger(elabOn) {
+  if (elabOn) {
     // Make ELAB mode
-    document.getElementById('page-heading').textContent = "Pixel Whisperer (ELAB Mode)";
+    document.getElementById('page-heading').textContent = "Pixel Whisperer";
     totalList = eLabList
   }
   else {
@@ -539,11 +640,6 @@ function elabChanger() {
   }
 }
 
-
-// Event listener for ELAB checkbox
-elabCheck.addEventListener('change', function() {
-  elabChanger();
-});
 
 // Listener for people pressing the zoom in or zoom out buttons
 document.getElementById('zoom-in').addEventListener('click', function() {
@@ -590,7 +686,7 @@ function redrawCanvas(imgElement, zoomFactor) {
   // Update the visible <img>
   pic.src = canvas.toDataURL();
 
-  updateImageData(); // keeps fullData in sync
+  //updateImageData(); // keeps fullData in sync
 }
 
 
@@ -599,8 +695,14 @@ function redrawCanvas(imgElement, zoomFactor) {
 ////////////////////////////////////////
 
 function updateImageData() {
-fullImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-fullData = fullImageData.data;
+  const originalCanvas = document.createElement("canvas");
+  const originalCtx = originalCanvas.getContext('2d');
+  originalCanvas.width = original_pic.naturalWidth;
+  originalCanvas.height = original_pic.naturalHeight;
+  originalCtx.drawImage(original_pic, 0, 0);
+  fullImageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+  fullData = fullImageData.data;
+  console.log("Updated full image data");
 }
 
 ////////////////////////////////////////
@@ -639,29 +741,74 @@ function debug(onOff) {
 let inputSequence = [];
 const debugSequence = ['d', 'e', 'b', 'u', 'g']; // The sequence to trigger debug mode
 const hideDebugSequence = ['r', 'e', 's', 'e','t']; // The sequence to hide debug mode
+const keysPressed = {}; // Object to track currently pressed keys for modifiers etc
+
+document.addEventListener('keyup', function(event) {
+    delete keysPressed[event.key]; // Remove key from pressed keys on release
+});
 
 document.addEventListener('keydown', function(event) {
+    keysPressed[event.key] = true;
+
     inputSequence.push(event.key);
 
     // First, check for image movement
-    const step = 1;
+    let step = 1;
+    if (keysPressed['q'] || keysPressed['Q']) {
+      step = 10; // Move faster if Q is held
+    }
     switch (event.key) {
       case 'ArrowUp':
         event.preventDefault(); // block page scroll
-        scrollImage("y",false);
+        scrollImage("y",false, step);
         break;
       case 'ArrowDown':
         event.preventDefault(); // block page scroll
-        scrollImage("y",true);
+        scrollImage("y",true, step);
         break;
       case 'ArrowLeft':
         event.preventDefault(); // block page scroll
-        scrollImage("x",false);
+        scrollImage("x",false, step);
         break;
       case 'ArrowRight':
         event.preventDefault(); // block page scroll
-        scrollImage("x",true);
+        scrollImage("x",true, step);
         break;
+      case '+':
+        changeZoom(zoom * 2);
+        break;
+      case '-':
+        changeZoom(zoom / 2);
+        break;
+    }
+
+    // Then check for Enter (acts as a click)
+    if (event.key === 'Enter') {
+      event.preventDefault(); // block page scroll
+      // Simulate a click at the current position
+      savePixel();
+    }
+
+    // Then check for sideLock toggle (v key) and vertLock toggle (h key)
+    if (event.key === 'v') {
+      sideLock = !sideLock;
+      if (sideLock) {
+        verticalLine.style.backgroundColor = 'red';
+      }
+      else {        
+        verticalLine.style.backgroundColor = 'black';
+      }
+      console.log(`Side lock ${sideLock ? 'enabled' : 'disabled'}`);
+    }
+    if (event.key === 'h') {
+      vertLock = !vertLock;
+      if (vertLock) {
+        horizontalLine.style.backgroundColor = 'red';
+      }
+      else {        
+        horizontalLine.style.backgroundColor = 'black';
+      }
+      console.log(`Vertical lock ${vertLock ? 'enabled' : 'disabled'}`);
     }
 
     // Then check for hidden codes
@@ -693,26 +840,15 @@ function scrollImage(axis, increment_up, step=1) {
   let scrollName;
   if (axis == 'x') {
     scrollName = 'scrollLeft';
-    lastMouseX += dir;
+    frame.parentElement[scrollName] += dir; // Try to scroll the image
+    incrementXY(dir, 0);
   }
-  else {
+  else { // axis == 'y'
     scrollName = 'scrollTop';
-    lastMouseY += dir;
+    frame.parentElement[scrollName] += dir; // Try to scroll the image
+    incrementXY(0, dir);
   }
-
-  const before_scroll = frame.parentElement[scrollName]; // Number - should get val not ref
-  frame.parentElement[scrollName] += dir;
-
-  if (frame.parentElement[scrollName] == before_scroll) { // No change - scrolling as far as you can!
-    if (axis == 'x') {
-    lastCrosshairX += dir;
-    }
-    else {
-      lastCrosshairY += dir;
-    }
-  }
-
-  updateFocus();
+  updateCentralPixel();
 }
 
 // Runs it initially
@@ -723,6 +859,55 @@ if (!(window.location.hostname === "localhost" || window.location.hostname === "
 else { // It is in debug mode
   debug(true);
   document.documentElement.style.background = '#222222';
+}
+
+////////////////////////////////////////
+// Setters for X/Y
+////////////////////////////////////////
+
+function updateAllXY() {
+  // Clamp PicX/Y
+  PicX = Math.max(0, Math.min(original_pic.naturalWidth - 1, PicX));
+  PicY = Math.max(0, Math.min(original_pic.naturalHeight - 1, PicY));
+
+  // Get CanvasXY from PicX/Y based on zoom
+  // If zoom is <1, PicX/Y are larger than CanvasX/Y; if zoom is >1, PicX/Y are smaller than CanvasX/Y
+  CanvasX = Math.floor(PicX * zoom);
+  CanvasY = Math.floor(PicY * zoom);
+
+  // Get FrameX/Y from CanvasX/Y based on scroll
+  const scrollLeft = frame.parentElement.scrollLeft;
+  const scrollTop = frame.parentElement.scrollTop;
+  FrameX = (CanvasX - scrollLeft);
+  FrameY = (CanvasY - scrollTop);
+  // Have to work out offset between image-fence and img-box, for some reason.
+  const imageBox = document.getElementById("img-box");
+  const fenceRect = fence.getBoundingClientRect();
+  const imageBoxRect = imageBox.getBoundingClientRect();
+  const offsetX = imageBoxRect.left - fenceRect.left;
+  const offsetY = imageBoxRect.top - fenceRect.top;
+  FrameX -= offsetX;
+  FrameY -= offsetY;
+}
+
+function setXY(x, y) { // Sets PicX/Y as the source of truth
+  if (!sideLock) {
+    PicX = x;
+  }
+  if (!vertLock) {
+    PicY = y;
+  }
+  updateAllXY();
+}
+
+function incrementXY(x, y) { // Increments PicX/Y by the given amounts
+  if (!sideLock) {
+    PicX += x;
+  }
+  if (!vertLock) {
+    PicY += y;
+  }
+  updateAllXY();
 }
 
 ////////////////////////////////////////
@@ -744,9 +929,17 @@ function initArrowPad() {
 
 // Function to call on page load
 function init() {
+
+  // Should be called on picture load; duplicating here to make sure it happens the first time as well
+  canvas.width = pic.width;
+  canvas.height = pic.height;
+  ctx.drawImage(pic, 0, 0, pic.width, pic.height);
+  updateImageData(); // Initialise the data
+
   // Uncheck ELAB mode by default (and call change function)
-  elabCheck.checked = false;
-  elabChanger();
+  elabChanger(false);
+  elabModeSelect.value = 'off';
+
   // Do the same for brightness
   brightness_slider.value = 50;
   changeBrightness();
@@ -763,16 +956,12 @@ function init() {
   // Set up arrow pad
   initArrowPad();
 
-  // Should be called on picture load; duplicating here to make sure it happens the first time as well
-  canvas.width = pic.width;
-  canvas.height = pic.height;
-  ctx.drawImage(pic, 0, 0, pic.width, pic.height);
-  updateImageData(); // Initialise the data
-
   // Start off the crosshair in the middle
   refreshCrosshairs();
   horizontalLine.style.top = `${Math.floor((fence.height)/2)}px`;
   verticalLine.style.left = `${Math.floor((fence.width)/2)}px`;
+
+  updateCentralPixel();
 };
 
 // Called when picture is first loaded
@@ -833,6 +1022,9 @@ window.addEventListener("resize", function() {
   // Code to execute when the window is resized
   console.log("Window resized!");
   // Example: Get and display current window dimensions
-  updateFocus();
+  updateCentralPixel();
   refreshCrosshairs();
 });
+
+// Run the init function on image load
+window.onload = init;
