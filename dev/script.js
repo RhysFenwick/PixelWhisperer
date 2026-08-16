@@ -62,6 +62,8 @@ const brightness_reset = document.getElementById('brightness-reset');
 const contrast_slider = document.getElementById('contrast');
 const contrast_reset = document.getElementById('contrast-reset');
 const tap_threshold = 10; // Pixel movement needed to become a drag rather than a tap
+const pixelList = document.getElementById('pixel-list');
+const pixelNotes = document.getElementById('pixel-notes-list');
 
 // Set up canvas; blank until picture load
 const canvas = document.createElement("canvas");
@@ -409,12 +411,12 @@ function clickOrTap(tapX, tapY) {
 
 // This is the core function for selecting a pixel - pulls PicX/Y directly
 function savePixel() {
+
   // Use average colour if enabled, otherwise single pixel
   const pixelData = averageMode
     ? getAverageColor(PicX, PicY)
     : getPixelFromFullData(PicX, PicY);
 
-  const pixelList = document.getElementById('pixel-list'); // TODO: Move this up top for global ref
   const pixel = document.createElement('li');
   const pixel_xy = pixelXY.textContent.split(' ');
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
@@ -434,7 +436,11 @@ function savePixel() {
 
   pixel.appendChild(document.createTextNode(`${xCoord}, ${yCoord} - ${hex} (${name})${modeIndicator}`));
   pixel.appendChild(colourSquare);
+
+  // Set up clone for notes modal
+  const pixelClone = pixel.cloneNode(true);
   pixelList.appendChild(pixel);
+  pixelNotes.appendChild(pixelClone);
 }
 
 // Mouse listeners
@@ -491,20 +497,21 @@ imagePopup.addEventListener('click', function () {
 
 // Handles clearing the pixel list - TODO: Add confirmation dialog
 document.getElementById('clear-button').addEventListener('click', function() {
-  document.getElementById('pixel-list').innerHTML = '';
+  pixelList.innerHTML = '';
+  pixelNotes.innerHTML = '';
 });
 
 // Handles copying the pixel list to the clipboard
 document.getElementById('copy-button').addEventListener('click', function() {
-  navigator.clipboard.writeText(pixelListToString(document.getElementById('pixel-list')));
+  navigator.clipboard.writeText(pixelListToString(pixelList));
   // Make the list go grey briefly to indicate it's been copied
-  document.getElementById('pixel-list').style.backgroundColor = '#f0f0f0';
-  setTimeout(() => {{document.getElementById('pixel-list').style.backgroundColor = 'white';}}, 250);
+  pixelList.style.backgroundColor = '#f0f0f0';
+  setTimeout(() => { pixelList.style.backgroundColor = 'white'; }, 250);
 });
 
 // Handles saving the pixel list to a CSV
 document.getElementById('export-button').addEventListener('click', function() {
-  const blob = new Blob([pixelListToCSV(document.getElementById('pixel-list'))], { type: 'text/csv' });
+  const blob = new Blob([pixelListToCSV(pixelList)], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
