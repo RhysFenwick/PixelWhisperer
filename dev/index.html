@@ -237,8 +237,20 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="notes-modal-body">
-          <!-- Pulls the details of the selected pixels from pixel_list -->
-          <ol id="pixel-notes-list" class="overflow-auto" style="max-height:60vh;"></ol>
+          <div id="pixel-notes-list" class="overflow-auto" style="max-height:60vh;">
+            <table id = "pixel-notes-table" class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope = "col"></th> <!-- Empty header for the colour swatch -->
+                  <th scope = "col">X,Y</th> <!-- TODO: List if it's averaged -->
+                  <th scope = "col">Hex</th>
+                  <th scope = "col">Name</th>
+                  <th scope = "col">Notes</th>
+                  <th scope = "col"></th> <!-- Empty header for edit button -->
+                  <th scope = "col"></th> <!-- Empty header for delete button -->
+              </thead>
+            </table>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -63,11 +63,71 @@ const contrast_slider = document.getElementById('contrast');
 const contrast_reset = document.getElementById('contrast-reset');
 const tap_threshold = 10; // Pixel movement needed to become a drag rather than a tap
 const pixelList = document.getElementById('pixel-list');
-const pixelNotes = document.getElementById('pixel-notes-list');
+const pixelNotes = document.getElementById('pixel-notes-table');
 
 // Set up canvas; blank until picture load
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+
+////////////////////////////////////////
+// Set up class for selected pixels
+////////////////////////////////////////
+
+// An array of these will be stored in SessionStorage as a source of truth for pixel list
+class Pixel {
+  constructor(x, y, hex, colourName, AverageSize, notes = "") {
+    this.x = x;
+    this.y = y;
+    this.hex = hex;
+    this.colourName = colourName;
+    this.AverageSize = AverageSize;
+    this.notes = notes;
+  }
+}
+
+let selectedPixels = []; // Array of Pixel objects, stored in SessionStorage as a source of truth for pixel list
+
+function editPixelNotes(index, newNotes) {
+  if (index >= 0 && index < selectedPixels.length) {
+    selectedPixels[index].notes = newNotes;
+  }
+}
+
+// Related helper functions
+
+// Everything that needs doing when a pixel is added or deleted
+function refreshSelectedPixels(newPixel = null) {
+  if (newPixel) {
+    selectedPixels.push(newPixel);
+  }
+
+  // Clear the existing list
+  pixelList.innerHTML = '';
+  pixelNotes.innerHTML = '';
+
+  // Rebuild the list
+  if (selectedPixels.length > 0) {
+    for (let i = 0; i < selectedPixels.length; i++) {
+      const pixel = selectedPixels[i];
+      // Set up list item for pixel list
+      const pixelElement = document.createElement('li');
+      pixelElement.innerHTML = `<span style="color:#${pixel.hex};">■</span> ${pixel.x}, ${pixel.y} - ${pixel.hex} (${pixel.colourName})${pixel.AverageSize > 1 ? ' [AVG]' : ''}`;
+      pixelList.appendChild(pixelElement);
+
+      // Set up line for notes modal (TODO: Replace with new line in table)
+      const pixelModalElement = document.createElement('tr');
+      pixelModalElement.innerHTML = `
+        <td>${pixel.x}, ${pixel.y}</td>
+        <td>#${pixel.hex}</td>
+        <td>${pixel.colourName}</td>
+        <td>${pixel.notes}</td>
+      `;
+      pixelNotes.appendChild(pixelModalElement);
+    }
+  }
+}
+
 
 ////////////////////////////////////////
 // Set up colour lists
@@ -417,7 +477,6 @@ function savePixel() {
     ? getAverageColor(PicX, PicY)
     : getPixelFromFullData(PicX, PicY);
 
-  const pixel = document.createElement('li');
   const pixel_xy = pixelXY.textContent.split(' ');
   const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
   const name = closestcolour(totalList, hex)[1];
@@ -425,22 +484,14 @@ function savePixel() {
   // Add average mode indicator if applicable
   const modeIndicator = averageMode ? ' [AVG]' : '';
 
-  // Add colour square to pixel list
-  const colourSquare = document.createElement('div');
-  colourSquare.className = 'colour-square';
-  colourSquare.style.backgroundColor = `#${hex}`;
 
   // Trim coordinates to remove any extra whitespace
   const xCoord = pixel_xy[0].trim();
   const yCoord = pixel_xy[2].trim();
 
-  pixel.appendChild(document.createTextNode(`${xCoord}, ${yCoord} - ${hex} (${name})${modeIndicator}`));
-  pixel.appendChild(colourSquare);
-
-  // Set up clone for notes modal
-  const pixelClone = pixel.cloneNode(true);
-  pixelList.appendChild(pixel);
-  pixelNotes.appendChild(pixelClone);
+  // Create Pixel object
+  const newPixel = new Pixel(xCoord, yCoord, hex, name, averageMode ? 3 : 1); // TODO: Fix averageMode
+  refreshSelectedPixels(newPixel);
 }
 
 // Mouse listeners
@@ -499,6 +550,8 @@ imagePopup.addEventListener('click', function () {
 document.getElementById('clear-button').addEventListener('click', function() {
   pixelList.innerHTML = '';
   pixelNotes.innerHTML = '';
+  selectedPixels = []; // Clear the selected pixels array
+  refreshSelectedPixels(); // Update the display
 });
 
 // Handles copying the pixel list to the clipboard
