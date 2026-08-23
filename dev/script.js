@@ -88,13 +88,13 @@ class Pixel {
 
 let selectedPixels = []; // Array of Pixel objects, stored in SessionStorage as a source of truth for pixel list
 
+// Related functions
+
 function editPixelNotes(index, newNotes) {
   if (index >= 0 && index < selectedPixels.length) {
     selectedPixels[index].notes = newNotes;
   }
 }
-
-// Related functions
 
 // Everything that needs doing when a pixel is added or deleted
 function refreshSelectedPixels(newPixel = null) {
@@ -126,6 +126,7 @@ function refreshSelectedPixels(newPixel = null) {
         <td><button class="btn btn-warning btn-sm" onclick="editPixelNotes(${i}, prompt('Edit notes for pixel (${pixel.x}, ${pixel.y}):', '${pixel.notes}'))">✏️</button></td>
         <td><button class="btn btn-danger btn-sm" onclick="deletePixel(${i})">🗑️</button></td>      `;
       pixelNotes.appendChild(pixelModalElement);
+      console.log(`Added pixel (${pixel.x}, ${pixel.y}) to list with notes: ${pixel.notes}`);
     }
   }
 }
@@ -476,12 +477,10 @@ function clickOrTap(tapX, tapY) {
   const rect = pic.getBoundingClientRect();
   const x = tapX - Math.floor(rect.left);
   const y = tapY - Math.floor(rect.top);
-  console.log(`Clicked at WindowX/Y (${tapX}, ${tapY}), FenceX/Y (${x}, ${y})`);
 
   // Calculate picX/picY based on zoom
   setXY(Math.floor(x / zoom), Math.floor(y / zoom));
 
-  console.log(`Translated to PicX/Y (${PicX}, ${PicY})`);
   savePixel();
 }
 
