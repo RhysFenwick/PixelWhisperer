@@ -45,14 +45,6 @@
               data-bs-target="#about-modal">
         About
       </button>
-
-      <button 
-              id="notes-button"
-              class="btn btn-primary"
-              data-bs-toggle="modal"
-              data-bs-target="#notes-modal">
-        Selected Colours
-      </button>
     </div>
 
     <div class="row g-3">
@@ -174,10 +166,19 @@
         <div class="border rounded p-2 border-3 text-center">
           <h3 class="text-center">Selected Pixels</h3>
           <ol id="pixel-list" class="overflow-auto" style="max-height:60vh;"></ol>
-          <div class="d-flex gap-2 mt-2 text-center">
-            <button id="copy-button" class="btn btn-primary btn-sm">Copy</button>
-            <button id="export-button" class="btn btn-secondary btn-sm">Export</button>
-            <button id="clear-button" class="btn btn-danger btn-sm">Clear</button>
+          <div class="d-flex gap-2 mt-2 text-center" style="display: flex; flex-direction: column; align-items: center;">
+            <div id="selected-pixel-buttons-top-row" style="display: flex; gap: 0.5rem; justify-content: center; width: 100%;">
+              <button id="copy-button" class="btn btn-primary btn-sm">Copy</button>
+              <button id="export-button" class="btn btn-secondary btn-sm">Export</button>
+              <button id="clear-button" class="btn btn-danger btn-sm">Clear</button>
+            </div>
+            <button 
+              id="notes-button"
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#notes-modal">
+                Add notes
+            </button>
           </div>
         </div>
       </div>
@@ -246,9 +247,12 @@
                   <th scope = "col">Hex</th>
                   <th scope = "col">Name</th>
                   <th scope = "col">Notes</th>
-                  <th scope = "col"></th> <!-- Empty header for edit button -->
-                  <th scope = "col"></th> <!-- Empty header for delete button -->
+                  <th scope = "col">Edit</th>
+                  <th scope = "col">Delete</th>
               </thead>
+              <tbody id="pixel-notes-table-body">
+                <!-- Rows will be dynamically added here -->
+              </tbody>
             </table>
           </div>
         </div>

@@ -15,6 +15,12 @@ code {
   border-radius: 4px;
 }
 
+td, th {
+  text-align: center;
+  vertical-align: middle;
+  min-width: 10px;
+}
+
 .crosshair-line {
   position: absolute;
   background-color: black;

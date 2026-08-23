@@ -63,7 +63,7 @@ const contrast_slider = document.getElementById('contrast');
 const contrast_reset = document.getElementById('contrast-reset');
 const tap_threshold = 10; // Pixel movement needed to become a drag rather than a tap
 const pixelList = document.getElementById('pixel-list');
-const pixelNotes = document.getElementById('pixel-notes-table');
+const pixelNotes = document.getElementById('pixel-notes-table-body');
 
 // Set up canvas; blank until picture load
 const canvas = document.createElement("canvas");
@@ -94,7 +94,7 @@ function editPixelNotes(index, newNotes) {
   }
 }
 
-// Related helper functions
+// Related functions
 
 // Everything that needs doing when a pixel is added or deleted
 function refreshSelectedPixels(newPixel = null) {
@@ -118,16 +118,32 @@ function refreshSelectedPixels(newPixel = null) {
       // Set up line for notes modal (TODO: Replace with new line in table)
       const pixelModalElement = document.createElement('tr');
       pixelModalElement.innerHTML = `
+        <td><span style="color:#${pixel.hex};">■</span></td>
         <td>${pixel.x}, ${pixel.y}</td>
         <td>#${pixel.hex}</td>
         <td>${pixel.colourName}</td>
         <td>${pixel.notes}</td>
-      `;
+        <td><button class="btn btn-warning btn-sm" onclick="editPixelNotes(${i}, prompt('Edit notes for pixel (${pixel.x}, ${pixel.y}):', '${pixel.notes}'))">✏️</button></td>
+        <td><button class="btn btn-danger btn-sm" onclick="deletePixel(${i})">🗑️</button></td>      `;
       pixelNotes.appendChild(pixelModalElement);
     }
   }
 }
 
+function deletePixel(index) {
+  if (index >= 0 && index < selectedPixels.length) {
+    selectedPixels.splice(index, 1);
+    refreshSelectedPixels();
+  }
+}
+
+// On click, should open a prompt to edit the notes for the pixel at the given index. If the user cancels, do nothing. If they enter new notes, update the Pixel object and refresh the display.
+function editPixelNotes(index, newNotes) {
+  if (index >= 0 && index < selectedPixels.length) {
+    selectedPixels[index].notes = newNotes;
+    refreshSelectedPixels();
+  }
+}
 
 ////////////////////////////////////////
 // Set up colour lists
