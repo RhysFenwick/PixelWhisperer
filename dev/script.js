@@ -574,13 +574,13 @@ document.getElementById('clear-button').addEventListener('click', function() {
 document.getElementById('copy-button').addEventListener('click', function() {
   navigator.clipboard.writeText(pixelListToString(pixelList));
   // Make the list go grey briefly to indicate it's been copied
-  pixelList.style.backgroundColor = '#f0f0f0';
+  pixelList.style.backgroundColor = '#aaaaaa';
   setTimeout(() => { pixelList.style.backgroundColor = 'white'; }, 250);
 });
 
 // Handles saving the pixel list to a CSV
 document.getElementById('export-button').addEventListener('click', function() {
-  const blob = new Blob([pixelListToCSV(pixelList)], { type: 'text/csv' });
+  const blob = new Blob([pixelListToCSV()], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -589,35 +589,27 @@ document.getElementById('export-button').addEventListener('click', function() {
   URL.revokeObjectURL(url);
 });
 
-// Turns the pixel-list into a well-formatted CSV
-function pixelListToCSV(pixelList) {
-  const rows = Array.from(pixelList.children).map(pixel => {
-    const line = pixel.textContent.trim(); // "472, 211 - D7D243 (Dark Khaki) [AVG]" or "472, 211 - D7D243 (Dark Khaki)"
-    const [coordPart, colour] = line.split(' - ');
-    const [x, y] = coordPart.split(',').map(n => n.trim());
-
-    // Check if this is an averaged pixel
-    const isAverage = colour.includes('[AVG]');
-    const colourWithoutAvg = colour.replace(' [AVG]', '');
-
-    const [hex, nameWithParen] = colourWithoutAvg.split('(');
-    const name = nameWithParen.trim().slice(0, -1); // Remove closing parenthesis
-
-    const avgIndicator = isAverage ? 'Yes' : 'No';
-    return `${x},${y},${hex.trim()},${name},${avgIndicator}`;
+// Turns the sessionStorage pixel list (selectedPixels) into a well-formatted CSV
+function pixelListToCSV() {
+  let csvContent = "X,Y,Hex,Colour Name,Average Size,Notes\n"; // Header row
+  // Add each pixel's data
+  selectedPixels.forEach(pixel => {
+    const row = `${pixel.x},${pixel.y},${pixel.hex},${pixel.colourName},${pixel.AverageSize},${pixel.notes}`;
+    csvContent += row + "\n";
   });
-
-  // Add header
-  rows.unshift('X Coord,Y Coord,Hex Code,Colour Name,Averaged (3x3)');
-
-  return rows.join('\n');
+  return csvContent;
 }
 
-function pixelListToString(pixelList) {
-  var pixelText = Array.from(pixelList.children).map(pixel => pixel.textContent).join('?');
-  pixelText = pixelText.replaceAll("\n", "-");
-  pixelText = pixelText.replaceAll('?', '\n');
-  return pixelText;
+// Similarto pixelListToCSV, but returns a string with each pixel on a new line, and each pixel's data separated by a question mark. Also replaces any newlines in the notes with a dash to prevent breaking the format.  
+function pixelListToString() {
+  let pixelString = "X  Y  Hex  Colour Name  Average Size  Notes\n"; // Initialize string
+  // Add each pixel's data
+  selectedPixels.forEach(pixel => {
+    const sanitizedNotes = pixel.notes.replace(/\n/g, '-'); // Replace newlines with dashes
+    const row = `${pixel.x} ${pixel.y}  ${pixel.hex}  ${pixel.colourName} ${pixel.AverageSize}  ${sanitizedNotes}`;
+    pixelString += row + "\n";
+  });
+  return pixelString;
 }
 
 ////////////////////////////////////////
