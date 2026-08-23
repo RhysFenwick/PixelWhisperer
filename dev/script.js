@@ -634,6 +634,9 @@ document.getElementById('image-upload-button').addEventListener('change', functi
       original_pic.src = e.target.result; // Set the backup image to the uploaded one
       updateImageData(); // Update the image data
 
+      selectedPixels = []; // Clear the selected pixels array
+      refreshSelectedPixels(); // Update the display
+
       refreshCrosshairs();
     };
     reader.readAsDataURL(file);
@@ -671,6 +674,9 @@ cameraButton.addEventListener('click', async () => {
         original_pic.src = canvas.toDataURL('image/png'); // Set the backup image to the captured one
         updateImageData(); // Update the image data with new image
         refreshCrosshairs();
+
+        selectedPixels = []; // Clear the selected pixels array
+        refreshSelectedPixels(); // Update the display
 
         // Stop the video stream and hide the preview - doesn't seem to work, added proxy above instead.
         stream.getTracks().forEach(track => track.stop());
