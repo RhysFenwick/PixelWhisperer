@@ -33,7 +33,7 @@ if not exist temp mkdir temp
 
 REM Process index.html - update paths and remove (DEV) indicators
 echo [1/3] Processing index.html...
-powershell -Command "(Get-Content 'dev\index.html') -replace '\.\./img/', 'img/' -replace '\.\./hashscript\.js', 'hashscript.js' -replace '\./script\.js', 'script.js' -replace '\./style\.css', 'style.css' -replace './dev/script.js', './script.js' -replace 'Pixel Whisperer \(DEV[^\)]*\)', 'Pixel Whisperer' -replace '\?v=[0-9.]+', '' | Set-Content 'temp\index.html'"
+powershell -Command "(Get-Content 'dev\index.html') -replace '\.\./img/', 'img/' -replace '\.\./hashscript\.js', 'hashscript.js' -replace '\./script\.js', 'script.js' -replace '\./style\.css', 'style.css' -replace './dev/script.js', './script.js' -replace '/dev/script.js', '/script.js'-replace '/dev/style.css', '/style.css'-replace 'Pixel Whisperer \(DEV[^\)]*\)', 'Pixel Whisperer' -replace '\?v=[0-9.]+', '' | Set-Content 'temp\index.html'"
 copy /Y temp\index.html index.html > nul
 echo       - Copied and updated paths
 
